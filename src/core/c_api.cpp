@@ -1128,7 +1128,7 @@ void editor_set_handle_config(intptr_t editor_handle,
 #pragma region Scrollbar Config
 
 void editor_set_scrollbar_config(intptr_t editor_handle,
-    float thickness, float min_thumb,
+    float thickness, float min_thumb, float thumb_hit_padding,
     int mode, int thumb_draggable, int track_tap_mode,
     int fade_delay_ms, int fade_duration_ms) {
   Ptr<EditorCore> editor_core = getCPtrHolderValue<EditorCore>(editor_handle);
@@ -1138,6 +1138,7 @@ void editor_set_scrollbar_config(intptr_t editor_handle,
   ScrollbarConfig config;
   config.thickness = thickness;
   config.min_thumb = min_thumb;
+  config.thumb_hit_padding = std::max(0.0f, thumb_hit_padding);
 
   if (mode <= static_cast<int>(ScrollbarMode::ALWAYS)) {
     config.mode = ScrollbarMode::ALWAYS;

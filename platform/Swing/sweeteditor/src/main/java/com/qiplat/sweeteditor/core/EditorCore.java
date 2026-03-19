@@ -434,6 +434,7 @@ public class EditorCore implements AutoCloseable {
 
         public final float thickness;
         public final float minThumb;
+        public final float thumbHitPadding;
         public final ScrollbarMode mode;
         public final boolean thumbDraggable;
         public final ScrollbarTrackTapMode trackTapMode;
@@ -441,18 +442,19 @@ public class EditorCore implements AutoCloseable {
         public final int fadeDurationMs;
 
         public ScrollbarConfig() {
-            this(10.0f, 24.0f, ScrollbarMode.ALWAYS, true, ScrollbarTrackTapMode.JUMP, 700, 300);
+            this(10.0f, 24.0f, 0.0f, ScrollbarMode.ALWAYS, true, ScrollbarTrackTapMode.JUMP, 700, 300);
         }
 
         public ScrollbarConfig(float thickness, float minThumb) {
-            this(thickness, minThumb, ScrollbarMode.ALWAYS, true, ScrollbarTrackTapMode.JUMP, 700, 300);
+            this(thickness, minThumb, 0.0f, ScrollbarMode.ALWAYS, true, ScrollbarTrackTapMode.JUMP, 700, 300);
         }
 
-        public ScrollbarConfig(float thickness, float minThumb,
+        public ScrollbarConfig(float thickness, float minThumb, float thumbHitPadding,
                                ScrollbarMode mode, boolean thumbDraggable, ScrollbarTrackTapMode trackTapMode,
                                int fadeDelayMs, int fadeDurationMs) {
             this.thickness = thickness;
             this.minThumb = minThumb;
+            this.thumbHitPadding = thumbHitPadding;
             this.mode = mode;
             this.thumbDraggable = thumbDraggable;
             this.trackTapMode = trackTapMode;
@@ -467,6 +469,7 @@ public class EditorCore implements AutoCloseable {
                 nativeHandle,
                 config.thickness,
                 config.minThumb,
+                config.thumbHitPadding,
                 config.mode.value,
                 config.thumbDraggable,
                 config.trackTapMode.value,

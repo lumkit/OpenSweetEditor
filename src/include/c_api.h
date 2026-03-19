@@ -574,13 +574,14 @@ EDITOR_API void editor_set_handle_config(intptr_t editor_handle,
 /// Set scrollbar full configuration (geometry + behavior)
 /// @param thickness Scrollbar thickness in pixels
 /// @param min_thumb Minimum scrollbar thumb length in pixels
+/// @param thumb_hit_padding Extra thumb hit-test padding in pixels
 /// @param mode 0=ALWAYS, 1=TRANSIENT, 2=NEVER
 /// @param thumb_draggable 1=thumb drag enabled, 0=disabled
 /// @param track_tap_mode 0=JUMP, 1=DISABLED
 /// @param fade_delay_ms Delay before hide in TRANSIENT mode
 /// @param fade_duration_ms Fade duration in TRANSIENT mode (used for both fade-in and fade-out)
 EDITOR_API void editor_set_scrollbar_config(intptr_t editor_handle,
-    float thickness, float min_thumb,
+    float thickness, float min_thumb, float thumb_hit_padding,
     int mode, int thumb_draggable, int track_tap_mode,
     int fade_delay_ms, int fade_duration_ms);
 

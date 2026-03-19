@@ -51,6 +51,7 @@ namespace NS_SWEETEDITOR {
         + ", enable_composition = " + (enable_composition ? "true" : "false")
         + ", scrollbar.thickness = " + std::to_string(scrollbar.thickness)
         + ", scrollbar.min_thumb = " + std::to_string(scrollbar.min_thumb)
+        + ", scrollbar.thumb_hit_padding = " + std::to_string(scrollbar.thumb_hit_padding)
         + ", scrollbar.mode = " + std::to_string(static_cast<int>(scrollbar.mode))
         + ", scrollbar.thumb_draggable = " + (scrollbar.thumb_draggable ? "true" : "false")
         + ", scrollbar.track_tap_mode = " + std::to_string(static_cast<int>(scrollbar.track_tap_mode))
@@ -77,15 +78,17 @@ namespace NS_SWEETEDITOR {
   void EditorCore::setScrollbarConfig(const ScrollbarConfig& config) {
     m_settings_.scrollbar.thickness = std::max(1.0f, config.thickness);
     m_settings_.scrollbar.min_thumb = std::max(m_settings_.scrollbar.thickness, config.min_thumb);
+    m_settings_.scrollbar.thumb_hit_padding = std::max(0.0f, config.thumb_hit_padding);
     m_settings_.scrollbar.mode = config.mode;
     m_settings_.scrollbar.thumb_draggable = config.thumb_draggable;
     m_settings_.scrollbar.track_tap_mode = config.track_tap_mode;
     m_settings_.scrollbar.fade_delay_ms = std::max<uint16_t>(0, config.fade_delay_ms);
     m_settings_.scrollbar.fade_duration_ms = std::max<uint16_t>(0, config.fade_duration_ms);
     normalizeScrollState();
-    LOGD("EditorCore::setScrollbarConfig(), thickness = %.1f, min_thumb = %.1f, mode = %d, thumb_draggable = %d, track_tap_mode = %d, fade_delay_ms = %u, fade_duration_ms = %u",
+    LOGD("EditorCore::setScrollbarConfig(), thickness = %.1f, min_thumb = %.1f, thumb_hit_padding = %.1f, mode = %d, thumb_draggable = %d, track_tap_mode = %d, fade_delay_ms = %u, fade_duration_ms = %u",
          m_settings_.scrollbar.thickness,
          m_settings_.scrollbar.min_thumb,
+         m_settings_.scrollbar.thumb_hit_padding,
          static_cast<int>(m_settings_.scrollbar.mode),
          m_settings_.scrollbar.thumb_draggable ? 1 : 0,
          static_cast<int>(m_settings_.scrollbar.track_tap_mode),
@@ -367,10 +370,7 @@ namespace NS_SWEETEDITOR {
     case EventType::MOUSE_DOWN: {
       if (event.points.empty()) return false;
       const PointF& point = event.points[0];
-      const bool is_touch_down = (event.type == EventType::TOUCH_DOWN);
-      const float thumb_hit_padding = is_touch_down
-        ? std::max(6.0f, m_settings_.scrollbar.thickness * 1.2f)
-        : 0.0f;
+      const float thumb_hit_padding = m_settings_.scrollbar.thumb_hit_padding;
 
       if (vertical.visible
           && m_settings_.scrollbar.thumb_draggable

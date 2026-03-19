@@ -626,6 +626,7 @@ public class EditorCore {
                 mNativeHandle,
                 config.thickness,
                 config.minThumb,
+                config.thumbHitPadding,
                 config.mode.value,
                 config.thumbDraggable,
                 config.trackTapMode.value,
@@ -1710,7 +1711,7 @@ public class EditorCore {
     private static native void nativeSetHandleConfig(long handle, float radius, float centerDist, float lineWidth, float touchPadding, float dragYOffset);
 
     @CriticalNative
-    private static native void nativeSetScrollbarConfig(long handle, float thickness, float minThumb,
+    private static native void nativeSetScrollbarConfig(long handle, float thickness, float minThumb, float thumbHitPadding,
                                                         int mode, boolean thumbDraggable, int trackTapMode,
                                                         int fadeDelayMs, int fadeDurationMs);
 

@@ -66,6 +66,8 @@ namespace NS_SWEETEDITOR {
     float thickness {10.0f};
     /// Minimum thumb length in pixels
     float min_thumb {24.0f};
+    /// Extra thumb hit-test padding in pixels (applied on all sides)
+    float thumb_hit_padding {0.0f};
     /// Visibility mode across platforms
     ScrollbarMode mode {ScrollbarMode::ALWAYS};
     /// Whether thumb drag interaction is enabled

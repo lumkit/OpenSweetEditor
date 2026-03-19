@@ -220,6 +220,8 @@ namespace SweetEditor {
 		public float Thickness { get; set; } = 10.0f;
 		/// <summary>Minimum scrollbar thumb length in pixels (default 24.0)</summary>
 		public float MinThumb { get; set; } = 24.0f;
+		/// <summary>Extra thumb hit-test padding in pixels.</summary>
+		public float ThumbHitPadding { get; set; } = 0.0f;
 		/// <summary>Visibility mode</summary>
 		public ScrollbarMode Mode { get; set; } = ScrollbarMode.ALWAYS;
 		/// <summary>Whether thumb dragging is enabled</summary>
@@ -1407,7 +1409,7 @@ namespace SweetEditor {
 
 		[DllImport(LibraryName, EntryPoint = "editor_set_scrollbar_config", CallingConvention = CallingConvention.Cdecl)]
 		internal static extern void SetScrollbarConfig(IntPtr handle,
-			float thickness, float minThumb,
+			float thickness, float minThumb, float thumbHitPadding,
 			int mode, int thumbDraggable, int trackTapMode,
 			int fadeDelayMs, int fadeDurationMs);
 
@@ -2069,6 +2071,7 @@ namespace SweetEditor {
 				nativeHandle,
 				config.Thickness,
 				config.MinThumb,
+				config.ThumbHitPadding,
 				(int) config.Mode,
 				config.ThumbDraggable ? 1 : 0,
 				(int) config.TrackTapMode,

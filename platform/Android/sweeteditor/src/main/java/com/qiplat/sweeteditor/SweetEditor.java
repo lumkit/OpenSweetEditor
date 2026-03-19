@@ -1989,9 +1989,11 @@ public class SweetEditor extends View {
         float density = getResources().getDisplayMetrics().density;
         float scrollbarThicknessPx = 12.0f * density;
         float scrollbarMinThumbPx = 48.0f * density;
+        float scrollbarThumbHitPaddingPx = 16.0f * density;
         mEditorCore.setScrollbarConfig(new ScrollbarConfig(
                 scrollbarThicknessPx,
                 scrollbarMinThumbPx,
+                scrollbarThumbHitPaddingPx,
                 ScrollbarConfig.ScrollbarMode.TRANSIENT,
                 true,
                 ScrollbarConfig.ScrollbarTrackTapMode.DISABLED,
