@@ -139,6 +139,16 @@ public class EditorCore implements AutoCloseable {
         }
     }
 
+    /** Advances edge-scroll by one tick and returns an updated gesture result. */
+    public GestureResult tickEdgeScroll() {
+        EditorNative.NativeBinaryResult result = EditorNative.tickEdgeScroll(nativeHandle);
+        try {
+            return ProtocolDecoder.decodeGestureResult(result.asByteBuffer());
+        } finally {
+            result.free();
+        }
+    }
+
     public KeyEventResult handleKeyEvent(int keyCode, String text, int modifiers) {
         try (Arena tempArena = Arena.ofConfined()) {
             EditorNative.NativeBinaryResult result = EditorNative.handleKeyEvent(nativeHandle, keyCode, text, modifiers, tempArena);

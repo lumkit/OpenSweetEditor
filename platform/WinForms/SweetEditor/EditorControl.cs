@@ -346,6 +346,11 @@ namespace SweetEditor {
 		private readonly MeasurePerfStats perfMeasureStats = new MeasurePerfStats();
 		private readonly PerfOverlay perfOverlay = new PerfOverlay();
 
+		// Edge-scroll timer for auto-scrolling during mouse drag selection
+		private const int EdgeScrollIntervalMs = 16;
+		private System.Windows.Forms.Timer? edgeScrollTimer;
+		private bool edgeScrollActive = false;
+
 		private SolidBrush GetOrCreateBrush(int argb) {
 			if (!brushCache.TryGetValue(argb, out var b)) {
 				b = new SolidBrush(System.Drawing.Color.FromArgb(argb));
@@ -1341,6 +1346,7 @@ namespace SweetEditor {
 				});
 				FireGestureEvents(gestureResult, new System.Drawing.PointF(e.X, e.Y));
 				Flush();
+				UpdateEdgeScrollTimer(gestureResult.NeedsEdgeScroll);
 			} else if (e.Button == MouseButtons.Right) {
 				GestureResult gestureResult = editorCore.HandleGestureEvent(new GestureEvent {
 					Type = EventType.MOUSE_RIGHT_DOWN,
@@ -1370,6 +1376,7 @@ namespace SweetEditor {
 				});
 				FireGestureEvents(gestureResult, new System.Drawing.PointF(e.X, e.Y));
 				Flush();
+				UpdateEdgeScrollTimer(gestureResult.NeedsEdgeScroll);
 			}
 			base.OnMouseMove(e);
 		}
@@ -1389,6 +1396,7 @@ namespace SweetEditor {
 					DirectScale = 1
 				});
 				FireGestureEvents(gestureResult, new System.Drawing.PointF(e.X, e.Y));
+				UpdateEdgeScrollTimer(false);
 			}
 			base.OnMouseUp(e);
 		}
@@ -1514,6 +1522,32 @@ namespace SweetEditor {
 			decorationProviderManager?.OnScrollChanged();
 			if (completionPopupController != null && completionPopupController.IsShowing) {
 				completionProviderManager?.Dismiss();
+			}
+		}
+
+		private void InitEdgeScrollTimer() {
+			edgeScrollTimer = new System.Windows.Forms.Timer();
+			edgeScrollTimer.Interval = EdgeScrollIntervalMs;
+			edgeScrollTimer.Tick += (_, _) => {
+				if (!edgeScrollActive) return;
+				GestureResult result = editorCore.TickEdgeScroll();
+				FireGestureEvents(result, System.Drawing.PointF.Empty);
+				Flush();
+				if (!result.NeedsEdgeScroll) {
+					edgeScrollActive = false;
+					edgeScrollTimer.Stop();
+				}
+			};
+		}
+
+		private void UpdateEdgeScrollTimer(bool needsEdgeScroll) {
+			if (edgeScrollTimer == null) InitEdgeScrollTimer();
+			if (needsEdgeScroll && !edgeScrollActive) {
+				edgeScrollActive = true;
+				edgeScrollTimer!.Start();
+			} else if (!needsEdgeScroll && edgeScrollActive) {
+				edgeScrollActive = false;
+				edgeScrollTimer!.Stop();
 			}
 		}
 

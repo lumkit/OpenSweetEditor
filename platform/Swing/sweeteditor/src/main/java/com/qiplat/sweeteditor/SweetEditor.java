@@ -86,6 +86,12 @@ public class SweetEditor extends JPanel implements EditorCore.TextMeasureCallbac
     private Timer cursorBlinkTimer;
     private boolean cursorVisible = true;
     private int currentDrawingLineNumber = -1;
+
+    // Edge-scroll timer for auto-scrolling during mouse drag selection
+    private static final int EDGE_SCROLL_INTERVAL_MS = 16;
+    private Timer edgeScrollTimer;
+    private boolean edgeScrollActive = false;
+
     private ScrollMetrics scrollMetrics;
     private final Rectangle2D.Float verticalScrollbarTrack = new Rectangle2D.Float();
     private final Rectangle2D.Float verticalScrollbarThumb = new Rectangle2D.Float();
@@ -141,6 +147,7 @@ public class SweetEditor extends JPanel implements EditorCore.TextMeasureCallbac
         setBackground(argbToColor(currentTheme.backgroundColor));
         setupEventListeners();
         setupCursorBlink();
+        setupEdgeScrollTimer();
         enableInputMethods(true);
     }
 
@@ -1265,6 +1272,7 @@ public class SweetEditor extends JPanel implements EditorCore.TextMeasureCallbac
         flush();
         if (result != null) {
             fireGestureEvents(result, new Point((int) x, (int) y));
+            updateEdgeScrollTimer(result.needsEdgeScroll);
         }
     }
 
@@ -1569,6 +1577,34 @@ public class SweetEditor extends JPanel implements EditorCore.TextMeasureCallbac
         cursorVisible = true;
         if (cursorBlinkTimer != null) {
             cursorBlinkTimer.restart();
+        }
+    }
+
+    // ===================== Edge Scroll =====================
+
+    private void setupEdgeScrollTimer() {
+        edgeScrollTimer = new Timer(EDGE_SCROLL_INTERVAL_MS, e -> {
+            if (!edgeScrollActive) return;
+            GestureResult result = editorCore.tickEdgeScroll();
+            if (result != null) {
+                fireGestureEvents(result, null);
+            }
+            flush();
+            if (result == null || !result.needsEdgeScroll) {
+                edgeScrollActive = false;
+                edgeScrollTimer.stop();
+            }
+        });
+        edgeScrollTimer.setRepeats(true);
+    }
+
+    private void updateEdgeScrollTimer(boolean needsEdgeScroll) {
+        if (needsEdgeScroll && !edgeScrollActive) {
+            edgeScrollActive = true;
+            edgeScrollTimer.start();
+        } else if (!needsEdgeScroll && edgeScrollActive) {
+            edgeScrollActive = false;
+            edgeScrollTimer.stop();
         }
     }
 

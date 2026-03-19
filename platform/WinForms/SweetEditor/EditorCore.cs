@@ -1196,6 +1196,9 @@ namespace SweetEditor {
 		internal static extern IntPtr HandleGestureEventEx(IntPtr handle, uint type, uint pointerCount, float[] points,
 			byte modifiers, float wheelDeltaX, float wheelDeltaY, float directScale, out UIntPtr outSize);
 
+		[DllImport(LibraryName, EntryPoint = "editor_tick_edge_scroll", CallingConvention = CallingConvention.Cdecl)]
+		internal static extern IntPtr TickEdgeScroll(IntPtr handle, out UIntPtr outSize);
+
 		[DllImport(LibraryName, EntryPoint = "handle_editor_key_event", CallingConvention = CallingConvention.Cdecl)]
 		internal static extern IntPtr HandleKeyEvent(IntPtr handle, ushort keyCode, [MarshalAs(UnmanagedType.LPUTF8Str)] string? text, byte modifiers, out UIntPtr outSize);
 
@@ -1637,6 +1640,12 @@ namespace SweetEditor {
 				(uint)(gestureEvent.Points?.Count ?? 0), pointsArr,
 				(byte)gestureEvent.Modifiers, gestureEvent.WheelDeltaX, gestureEvent.WheelDeltaY, gestureEvent.DirectScale,
 				out UIntPtr payloadSize);
+			return ProtocolDecoder.ParseGestureResult(payloadPtr, payloadSize);
+		}
+
+		/// <summary>Advances edge-scroll by one tick and returns an updated gesture result.</summary>
+		public GestureResult TickEdgeScroll() {
+			IntPtr payloadPtr = NativeMethods.TickEdgeScroll(nativeHandle, out UIntPtr payloadSize);
 			return ProtocolDecoder.ParseGestureResult(payloadPtr, payloadSize);
 		}
 

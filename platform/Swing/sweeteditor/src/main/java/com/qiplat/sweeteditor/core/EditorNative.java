@@ -274,6 +274,9 @@ public final class EditorNative {
     private static final MethodHandle BUILD_RENDER_MODEL = downcall("build_editor_render_model",
             FunctionDescriptor.of(ValueLayout.ADDRESS, ValueLayout.JAVA_LONG, ValueLayout.ADDRESS));
 
+    private static final MethodHandle TICK_EDGE_SCROLL = downcall("editor_tick_edge_scroll",
+            FunctionDescriptor.of(ValueLayout.ADDRESS, ValueLayout.JAVA_LONG, ValueLayout.ADDRESS));
+
     private static final MethodHandle HANDLE_GESTURE_EX = downcall("handle_editor_gesture_event_ex",
             FunctionDescriptor.of(ValueLayout.ADDRESS,
                     ValueLayout.JAVA_LONG, ValueLayout.JAVA_BYTE, ValueLayout.JAVA_BYTE, ValueLayout.ADDRESS,
@@ -651,6 +654,10 @@ public final class EditorNative {
 
     public static NativeBinaryResult buildRenderModel(long handle) {
         return invokeBinaryResult(outSize -> (MemorySegment) BUILD_RENDER_MODEL.invokeExact(handle, outSize));
+    }
+
+    public static NativeBinaryResult tickEdgeScroll(long handle) {
+        return invokeBinaryResult(outSize -> (MemorySegment) TICK_EDGE_SCROLL.invokeExact(handle, outSize));
     }
 
     // ===================== Gesture/Keyboard Events =====================
