@@ -87,7 +87,13 @@ This document gives practical development entry points based on the current repo
 - `platform/Apple/Sources/SweetEditorBridge/include/SweetEditorBridge.h`
   - manual C bridge header
 - `platform/Apple/Sources/SweetEditorCoreInternal/api/SweetEditorCore.swift`
-  - core Swift wrapper and binary protocol decode
+  - core Swift wrapper and bridge-facing entry points
+- `platform/Apple/Sources/SweetEditorCoreInternal/protocol/ProtocolDecoder.swift`
+  - binary payload decoding aligned with Android `ProtocolDecoder`
+- `platform/Apple/Sources/SweetEditorCoreInternal/visual`
+  - render-model DTOs aligned with Android `core.visual`
+- `platform/Apple/Sources/SweetEditorCoreInternal/EditorRenderer.swift`
+  - shared Apple renderer consuming the visual model
 - `platform/Apple/Sources/SweetEditoriOS`
 - `platform/Apple/Sources/SweetEditorMacOS`
   - iOS / macOS platform views

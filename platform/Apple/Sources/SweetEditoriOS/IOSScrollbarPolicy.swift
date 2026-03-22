@@ -1,0 +1,20 @@
+import SweetEditorCoreInternal
+
+struct IOSScrollbarPolicy {
+    let defaultThickness: Float = 8.0
+    let defaultMinThumb: Float = 48.0
+    let defaultThumbHitPadding: Float = 16.0
+
+    func defaultConfig() -> SweetEditorCore.ScrollbarConfig {
+        SweetEditorCore.ScrollbarConfig(
+            thickness: defaultThickness,
+            minThumb: defaultMinThumb,
+            thumbHitPadding: defaultThumbHitPadding,
+            mode: .TRANSIENT,
+            thumbDraggable: true,
+            trackTapMode: .DISABLED,
+            fadeDelayMs: 700,
+            fadeDurationMs: 300
+        )
+    }
+}

@@ -26,8 +26,10 @@ struct EditorRenderer {
                      core: SweetEditorCore,
                      viewHeight: CGFloat,
                      iconProvider: EditorIconProvider? = nil,
-                     isCursorBlinkVisible: Bool = true) -> Bool {
+                     isCursorBlinkVisible: Bool = true,
+                     scrollbarStyle: ScrollbarVisualStyle? = nil) -> Bool {
         let t = theme
+        let resolvedScrollbarStyle = scrollbarStyle ?? ScrollbarVisualStyle.themedDefault(for: t)
         let rect = CGRect(x: 0, y: 0,
                           width: CGFloat(model.viewport_width),
                           height: CGFloat(model.viewport_height))
@@ -134,7 +136,7 @@ struct EditorRenderer {
                            iconProvider: iconProvider)
         }
 
-        return drawScrollbars(context: context, model: model)
+        return drawScrollbars(context: context, model: model, style: resolvedScrollbarStyle)
     }
 
     // MARK: - Drawing Helpers
@@ -493,7 +495,7 @@ struct EditorRenderer {
         }
     }
 
-    static func drawScrollbars(context: CGContext, model: EditorRenderModel) -> Bool {
+    static func drawScrollbars(context: CGContext, model: EditorRenderModel, style: ScrollbarVisualStyle) -> Bool {
         let vertical = model.vertical_scrollbar
         let horizontal = model.horizontal_scrollbar
         let verticalAlpha = scrollbarAlpha(vertical)
@@ -510,32 +512,33 @@ struct EditorRenderer {
         var horizontalTrackHeight: CGFloat = 0
 
         if hasVertical {
-            let trackRect = insetScrollbarRect(rect(from: vertical.track))
-            let thumbRect = insetScrollbarRect(rect(from: vertical.thumb))
+            let trackRect = insetScrollbarRect(rect(from: vertical.track), orientation: .vertical, style: style)
+            let thumbRect = insetScrollbarRect(rect(from: vertical.thumb), orientation: .vertical, style: style)
             verticalTrackX = trackRect.minX
             verticalTrackWidth = trackRect.width
-            context.setFillColor(color(theme.scrollbarTrackColor, alphaMultiplier: verticalAlpha))
-            fillRoundedScrollbarRect(trackRect, context: context)
-            context.setFillColor(color(theme.scrollbarThumbColor, alphaMultiplier: verticalAlpha))
-            fillRoundedScrollbarRect(thumbRect, context: context)
+            context.setFillColor(color(style.trackColor, alphaMultiplier: verticalAlpha))
+            fillRoundedScrollbarRect(trackRect, context: context, style: style)
+            context.setFillColor(color(style.thumbColor, alphaMultiplier: verticalAlpha))
+            fillRoundedScrollbarRect(thumbRect, context: context, style: style)
         }
 
         if hasHorizontal {
-            let trackRect = insetScrollbarRect(rect(from: horizontal.track))
-            let thumbRect = insetScrollbarRect(rect(from: horizontal.thumb))
+            let trackRect = insetScrollbarRect(rect(from: horizontal.track), orientation: .horizontal, style: style)
+            let thumbRect = insetScrollbarRect(rect(from: horizontal.thumb), orientation: .horizontal, style: style)
             horizontalTrackY = trackRect.minY
             horizontalTrackHeight = trackRect.height
-            context.setFillColor(color(theme.scrollbarTrackColor, alphaMultiplier: horizontalAlpha))
-            fillRoundedScrollbarRect(trackRect, context: context)
-            context.setFillColor(color(theme.scrollbarThumbColor, alphaMultiplier: horizontalAlpha))
-            fillRoundedScrollbarRect(thumbRect, context: context)
+            context.setFillColor(color(style.trackColor, alphaMultiplier: horizontalAlpha))
+            fillRoundedScrollbarRect(trackRect, context: context, style: style)
+            context.setFillColor(color(style.thumbColor, alphaMultiplier: horizontalAlpha))
+            fillRoundedScrollbarRect(thumbRect, context: context, style: style)
         }
 
         if hasVertical && hasHorizontal {
-            context.setFillColor(color(theme.scrollbarTrackColor, alphaMultiplier: max(verticalAlpha, horizontalAlpha)))
+            context.setFillColor(color(style.trackColor, alphaMultiplier: max(verticalAlpha, horizontalAlpha)))
             fillRoundedScrollbarRect(
                 CGRect(x: verticalTrackX, y: horizontalTrackY, width: verticalTrackWidth, height: horizontalTrackHeight),
-                context: context
+                context: context,
+                style: style
             )
         }
 
@@ -578,23 +581,27 @@ struct EditorRenderer {
         base.copy(alpha: base.alpha * clampUnit(alphaMultiplier)) ?? base
     }
 
-    private static func insetScrollbarRect(_ rect: CGRect) -> CGRect {
-        guard rect.width > 0, rect.height > 0 else { return rect }
-        if rect.height >= rect.width {
-            let insetX = max(1.0, floor(rect.width * 0.25))
-            return rect.insetBy(dx: insetX, dy: 1.0).integral
-        }
-
-        let insetY = max(1.0, floor(rect.height * 0.25))
-        return rect.insetBy(dx: 1.0, dy: insetY).integral
+    private enum ScrollbarOrientation {
+        case vertical
+        case horizontal
     }
 
-    private static func fillRoundedScrollbarRect(_ rect: CGRect, context: CGContext) {
+    private static func insetScrollbarRect(_ rect: CGRect, orientation: ScrollbarOrientation, style: ScrollbarVisualStyle) -> CGRect {
+        guard rect.width > 0, rect.height > 0 else { return rect }
+        switch orientation {
+        case .vertical:
+            return rect.insetBy(dx: style.verticalInset, dy: style.longitudinalInset).integral
+        case .horizontal:
+            return rect.insetBy(dx: style.longitudinalInset, dy: style.horizontalInset).integral
+        }
+    }
+
+    private static func fillRoundedScrollbarRect(_ rect: CGRect, context: CGContext, style: ScrollbarVisualStyle) {
         guard rect.width > 0, rect.height > 0 else { return }
-        let radius = min(rect.width, rect.height) * 0.5
+        let radius = min(min(rect.width, rect.height) * 0.5, style.minimumCornerRadius)
         let path = CGPath(roundedRect: rect, cornerWidth: radius, cornerHeight: radius, transform: nil)
         context.saveGState()
-        context.setShouldAntialias(false)
+        context.setShouldAntialias(style.shouldAntialias)
         context.addPath(path)
         context.fillPath()
         context.restoreGState()

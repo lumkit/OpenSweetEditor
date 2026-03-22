@@ -19,6 +19,7 @@ class IOSEditorView: UIView, UIKeyInput, UITextInputTraits, UIPointerInteraction
     private var newLineActionProviderManager: NewLineActionProviderManager?
     private var pinchRecognizer: UIPinchGestureRecognizer!
     private var transientScrollbarRefreshTimer: Timer?
+    private var scrollbarPolicy = IOSScrollbarPolicy()
 
     /// Current language configuration.
     private(set) var languageConfiguration: LanguageConfiguration?
@@ -54,7 +55,7 @@ class IOSEditorView: UIView, UIKeyInput, UITextInputTraits, UIPointerInteraction
         isUserInteractionEnabled = true
 
         editorCore = SweetEditorCore(fontSize: 14.0, fontName: "Menlo")
-        editorCore.setScrollbarConfig(ScrollbarDefaults.defaultConfig())
+        editorCore.setScrollbarConfig(scrollbarPolicy.defaultConfig())
         EditorRenderer.applyTheme(EditorRenderer.theme, core: editorCore)
         decorationProviderManager = DecorationProviderManager(
             core: editorCore,
@@ -522,7 +523,7 @@ class IOSEditorView: UIView, UIKeyInput, UITextInputTraits, UIPointerInteraction
             transientScrollbarRefreshTimer = nil
             return
         }
-        ScrollbarDefaults.scheduleTransientRefreshTimer(&transientScrollbarRefreshTimer) { [weak self] in
+        ScrollbarRefreshScheduler.scheduleTransientRefreshTimer(&transientScrollbarRefreshTimer) { [weak self] in
             self?.rebuildAndRedraw()
         }
     }

@@ -5,7 +5,7 @@ This document maps to the current Apple SPM SDK implementation (root: `platform/
 ## Overview
 
 - Public products: `SweetEditoriOS`, `SweetEditorMacOS`
-- Internal core target: `SweetEditorCore` (not exposed directly)
+- Internal core target: `SweetEditorCoreInternal` (not exposed directly)
 - Core communication path: Swift -> manual C bridge -> C++ Core
 
 Key files:
@@ -14,12 +14,19 @@ Key files:
 - Swift core wrapper: `platform/Apple/Sources/SweetEditorCoreInternal/api/SweetEditorCore.swift`
 - Document object: `platform/Apple/Sources/SweetEditorCoreInternal/runtime/SweetDocument.swift`
 
+Internal layout follows the same mental split used by Android:
+
+- Binary protocol decode: `platform/Apple/Sources/SweetEditorCoreInternal/protocol/ProtocolDecoder.swift`
+- Render-model DTOs: `platform/Apple/Sources/SweetEditorCoreInternal/visual/`
+- Shared renderer: `platform/Apple/Sources/SweetEditorCoreInternal/EditorRenderer.swift`
+- Shared theme/support types: `platform/Apple/Sources/SweetEditorCoreInternal/EditorTheme.swift`, `platform/Apple/Sources/SweetEditorCoreInternal/ScrollbarVisualStyle.swift`, `platform/Apple/Sources/SweetEditorCoreInternal/EditorIconProvider.swift`
+
 ## Shared Core Features (for iOS and macOS)
 
 `SweetEditorCore` is the shared feature layer for iOS and macOS. It handles:
 
 - UTF-16 pointer conversion
-- Binary payload decoding (including `LayoutMetrics`)
+- Delegation into binary payload decoding (including `LayoutMetrics`) via `ProtocolDecoder`
 - Text measure callbacks and render-model building
 
 ### Basic and Rendering

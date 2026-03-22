@@ -153,18 +153,32 @@ final class SweetEditorMacOSTests: XCTestCase {
         XCTAssertFalse(model?.horizontal_scrollbar.visible ?? true)
     }
 
+    func testProtocolDecoderProvidesDefaultScrollMetricsForNilPayload() {
+        let core = SweetEditorCore(fontSize: 14.0, fontName: "Menlo")
+        let decoder = ProtocolDecoder(owner: core)
+
+        let metrics = decoder.decodeScrollMetrics(nil)
+
+        XCTAssertEqual(Double(metrics.scale), 1.0, accuracy: 0.001)
+        XCTAssertEqual(Double(metrics.scrollX), 0.0, accuracy: 0.001)
+        XCTAssertEqual(Double(metrics.scrollY), 0.0, accuracy: 0.001)
+        XCTAssertFalse(metrics.canScrollX)
+        XCTAssertFalse(metrics.canScrollY)
+    }
+
     func testDefaultScrollbarConfigMatchesTransientParity() {
         let view = SweetEditorViewMacOS(frame: NSRect(x: 0, y: 0, width: 320, height: 160))
         let core = readPrivateValue(view, key: "editorCore", as: SweetEditorCore.self)
         let config = core?.scrollbarConfig
+        let expected = MacOSScrollbarPolicy().defaultConfig()
 
-        XCTAssertEqual(Double(config?.thickness ?? .nan), 8.0, accuracy: 0.001)
-        XCTAssertEqual(Double(config?.minThumb ?? .nan), 48.0, accuracy: 0.001)
-        XCTAssertEqual(Double(config?.thumbHitPadding ?? .nan), 16.0, accuracy: 0.001)
-        XCTAssertEqual(config?.mode, .TRANSIENT)
-        XCTAssertEqual(config?.trackTapMode, .DISABLED)
-        XCTAssertEqual(config?.fadeDelayMs, 700)
-        XCTAssertEqual(config?.fadeDurationMs, 300)
+        XCTAssertEqual(Double(config?.thickness ?? .nan), Double(expected.thickness), accuracy: 0.001)
+        XCTAssertEqual(Double(config?.minThumb ?? .nan), Double(expected.minThumb), accuracy: 0.001)
+        XCTAssertEqual(Double(config?.thumbHitPadding ?? .nan), Double(expected.thumbHitPadding), accuracy: 0.001)
+        XCTAssertEqual(config?.mode, expected.mode)
+        XCTAssertEqual(config?.trackTapMode, expected.trackTapMode)
+        XCTAssertEqual(config?.fadeDelayMs, expected.fadeDelayMs)
+        XCTAssertEqual(config?.fadeDurationMs, expected.fadeDurationMs)
     }
 
     func testMacViewExposesDecorationParityAPIs() {
@@ -248,6 +262,70 @@ final class SweetEditorMacOSTests: XCTestCase {
         )
     }
 
+    func testMacViewHoverRevealIsEnabledByDefault() {
+        let view = SweetEditorViewMacOS(frame: NSRect(x: 0, y: 0, width: 320, height: 160))
+
+        XCTAssertEqual(view.scrollbarHoverRevealEnabled, MacOSScrollbarPolicy().hoverRevealEnabled)
+    }
+
+    func testMacOSScrollbarPolicyProvidesVisualStyle() {
+        let style = MacOSScrollbarPolicy().visualStyle(for: EditorRenderer.theme)
+
+        XCTAssertEqual(style.verticalInset, 2.0, accuracy: 0.001)
+        XCTAssertEqual(style.horizontalInset, 2.0, accuracy: 0.001)
+        XCTAssertEqual(style.minimumCornerRadius, 2.0, accuracy: 0.001)
+        XCTAssertFalse(style.shouldAntialias)
+    }
+
+    func testMacOSScrollbarPolicyOverlayStyleUsesTransientHoverDefaults() {
+        let policy = MacOSScrollbarPolicy(scrollerStyle: .overlay)
+        let config = policy.defaultConfig()
+
+        XCTAssertTrue(policy.hoverRevealEnabled)
+        XCTAssertEqual(config.mode, .TRANSIENT)
+        XCTAssertEqual(config.trackTapMode, .DISABLED)
+        XCTAssertEqual(config.thickness, 8.0, accuracy: 0.001)
+    }
+
+    func testMacOSScrollbarPolicyLegacyStyleDisablesHoverAndKeepsScrollbarsVisible() {
+        let policy = MacOSScrollbarPolicy(scrollerStyle: .legacy)
+        let config = policy.defaultConfig()
+
+        XCTAssertFalse(policy.hoverRevealEnabled)
+        XCTAssertEqual(config.mode, .ALWAYS)
+        XCTAssertEqual(config.trackTapMode, .JUMP)
+        XCTAssertEqual(config.thickness, 10.0, accuracy: 0.001)
+    }
+
+    func testMacOSScrollbarRevealTriggerUsesDirectScrollShim() {
+        let trigger = MacOSScrollbarRevealTrigger()
+        let request = trigger.makeRevealRequest(at: CGPoint(x: 12, y: 34), modifiers: [.shift])
+
+        XCTAssertEqual(request.type, .directScroll)
+        XCTAssertEqual(request.points.count, 1)
+        XCTAssertEqual(Double(request.points.first?.0 ?? .nan), 12.0, accuracy: 0.001)
+        XCTAssertEqual(Double(request.points.first?.1 ?? .nan), 34.0, accuracy: 0.001)
+        XCTAssertEqual(request.modifiers, [.shift])
+        XCTAssertEqual(Double(request.wheelDeltaX), 0.0, accuracy: 0.001)
+        XCTAssertEqual(Double(request.wheelDeltaY), 0.0, accuracy: 0.001)
+    }
+
+    func testMacViewDisablingHoverRevealRemovesTrackingArea() {
+        let view = SweetEditorViewMacOS(frame: NSRect(x: 0, y: 0, width: 320, height: 160))
+        view.updateTrackingAreas()
+
+        view.scrollbarHoverRevealEnabled = false
+        view.updateTrackingAreas()
+
+        XCTAssertFalse(
+            view.trackingAreas.contains {
+                $0.options.contains(.mouseMoved)
+                    && $0.options.contains(.activeInKeyWindow)
+                    && $0.options.contains(.inVisibleRect)
+            }
+        )
+    }
+
     func testScrollbarHoverRevealUsesLastVisibleTrackWhenCurrentModelIsHidden() {
         let visibleModel = makeRenderModel(
             viewportWidth: 120,
@@ -282,13 +360,13 @@ final class SweetEditorMacOSTests: XCTestCase {
             )
         )
 
-        let cachedRegions = ScrollbarHoverReveal.cachedRegions(from: nil, latestModel: visibleModel)
+        var hoverController = MacOSScrollbarHoverController()
+        hoverController.updateZones(enabled: true, latestModel: visibleModel, fallbackMetrics: nil, scrollbarConfig: nil)
 
         XCTAssertTrue(
-            ScrollbarHoverReveal.shouldReveal(
+            hoverController.shouldReveal(
                 at: CGPoint(x: 114, y: 24),
-                currentModel: hiddenModel,
-                cachedRegions: cachedRegions
+                currentModel: hiddenModel
             )
         )
     }
@@ -310,8 +388,9 @@ final class SweetEditorMacOSTests: XCTestCase {
             canScrollY: true
         )
 
-        let cachedRegions = ScrollbarHoverReveal.cachedRegions(
-            from: nil,
+        var hoverController = MacOSScrollbarHoverController()
+        hoverController.updateZones(
+            enabled: true,
             latestModel: nil,
             fallbackMetrics: metrics,
             scrollbarConfig: SweetEditorCore.ScrollbarConfig(
@@ -327,10 +406,9 @@ final class SweetEditorMacOSTests: XCTestCase {
         )
 
         XCTAssertTrue(
-            ScrollbarHoverReveal.shouldReveal(
+            hoverController.shouldReveal(
                 at: CGPoint(x: 114, y: 24),
-                currentModel: nil,
-                cachedRegions: cachedRegions
+                currentModel: nil
             )
         )
     }

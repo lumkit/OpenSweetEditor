@@ -1,3 +1,4 @@
+#if os(macOS)
 import CoreGraphics
 import SweetEditorCoreInternal
 
@@ -14,45 +15,53 @@ struct ScrollbarHoverRegions {
     }
 }
 
-enum ScrollbarHoverReveal {
-    static func cachedRegions(from current: ScrollbarHoverRegions?,
+struct MacOSScrollbarHoverController {
+    private(set) var cachedRegions: ScrollbarHoverRegions?
+
+    mutating func reset() {
+        cachedRegions = nil
+    }
+
+    mutating func updateZones(enabled: Bool,
                               latestModel: EditorRenderModel?,
-                              fallbackMetrics: SweetEditorCore.ScrollMetrics? = nil,
-                              scrollbarConfig: SweetEditorCore.ScrollbarConfig? = nil) -> ScrollbarHoverRegions? {
+                              fallbackMetrics: SweetEditorCore.ScrollMetrics?,
+                              scrollbarConfig: SweetEditorCore.ScrollbarConfig?) {
+        guard enabled else {
+            cachedRegions = nil
+            return
+        }
+
         if let latestModel {
             let latestRegions = ScrollbarHoverRegions(
                 vertical: revealRect(for: latestModel.vertical_scrollbar),
                 horizontal: revealRect(for: latestModel.horizontal_scrollbar)
             )
             if !latestRegions.isEmpty {
-                return latestRegions
+                cachedRegions = latestRegions
+                return
             }
         }
 
         if let fallbackMetrics, let scrollbarConfig {
             let fallbackRegions = regions(from: fallbackMetrics, scrollbarConfig: scrollbarConfig)
             if !fallbackRegions.isEmpty {
-                return fallbackRegions
+                cachedRegions = fallbackRegions
             }
         }
-
-        return current
     }
 
-    static func shouldReveal(at point: CGPoint,
-                             currentModel: EditorRenderModel?,
-                             cachedRegions: ScrollbarHoverRegions?) -> Bool {
+    func shouldReveal(at point: CGPoint, currentModel: EditorRenderModel?) -> Bool {
         guard let cachedRegions else { return false }
         guard !hasVisibleScrollbar(currentModel) else { return false }
         return cachedRegions.contains(point)
     }
 
-    private static func hasVisibleScrollbar(_ model: EditorRenderModel?) -> Bool {
+    private func hasVisibleScrollbar(_ model: EditorRenderModel?) -> Bool {
         guard let model else { return false }
         return isVisible(model.vertical_scrollbar) || isVisible(model.horizontal_scrollbar)
     }
 
-    private static func revealRect(for scrollbar: ScrollbarModel) -> CGRect? {
+    private func revealRect(for scrollbar: ScrollbarModel) -> CGRect? {
         guard isVisible(scrollbar) else { return nil }
         return CGRect(
             x: CGFloat(scrollbar.track.origin.x),
@@ -62,15 +71,15 @@ enum ScrollbarHoverReveal {
         )
     }
 
-    private static func isVisible(_ scrollbar: ScrollbarModel) -> Bool {
+    private func isVisible(_ scrollbar: ScrollbarModel) -> Bool {
         scrollbar.visible
             && scrollbar.alpha > 0
             && scrollbar.track.width > 0
             && scrollbar.track.height > 0
     }
 
-    private static func regions(from metrics: SweetEditorCore.ScrollMetrics,
-                                scrollbarConfig: SweetEditorCore.ScrollbarConfig) -> ScrollbarHoverRegions {
+    private func regions(from metrics: SweetEditorCore.ScrollMetrics,
+                         scrollbarConfig: SweetEditorCore.ScrollbarConfig) -> ScrollbarHoverRegions {
         let thickness = CGFloat(max(1.0, scrollbarConfig.thickness))
         let viewportWidth = metrics.viewportWidth
         let viewportHeight = metrics.viewportHeight
@@ -100,3 +109,4 @@ enum ScrollbarHoverReveal {
         return ScrollbarHoverRegions(vertical: vertical, horizontal: horizontal)
     }
 }
+#endif

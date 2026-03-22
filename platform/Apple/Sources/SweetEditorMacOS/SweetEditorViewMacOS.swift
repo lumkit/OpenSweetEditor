@@ -10,6 +10,15 @@ public class SweetEditorViewMacOS: NSView, NSTextInputClient, CompletionEditorAc
     public var onInlayHintClick: ((SweetEditorInlayHintClickEvent) -> Void)?
     public var onGutterIconClick: ((SweetEditorGutterIconClickEvent) -> Void)?
     public var editorIconProvider: EditorIconProvider?
+    public var scrollbarHoverRevealEnabled: Bool {
+        get { scrollbarPolicy.hoverRevealEnabled }
+        set {
+            guard scrollbarPolicy.hoverRevealEnabled != newValue else { return }
+            scrollbarPolicy.hoverRevealEnabled = newValue
+            configureHoverRevealTracking()
+            rebuildAndRedraw()
+        }
+    }
 
     public func setEditorIconProvider(_ provider: EditorIconProvider?) {
         editorIconProvider = provider
@@ -39,7 +48,9 @@ public class SweetEditorViewMacOS: NSView, NSTextInputClient, CompletionEditorAc
     private var cursorBlinkTimer: Timer?
     private var transientScrollbarRefreshTimer: Timer?
     private var hoverTrackingArea: NSTrackingArea?
-    private var cachedScrollbarHoverRegions: ScrollbarHoverRegions?
+    private var scrollbarPolicy = MacOSScrollbarPolicy()
+    private var scrollbarHoverController = MacOSScrollbarHoverController()
+    private let scrollbarRevealTrigger = MacOSScrollbarRevealTrigger()
     private var isCursorBlinkVisible = true
     private var pendingFrameBuildDurationMs: Double = 0
     private var performanceWindowStartTimestamp: CFTimeInterval?
@@ -87,7 +98,7 @@ public class SweetEditorViewMacOS: NSView, NSTextInputClient, CompletionEditorAc
         wantsLayer = true
         layer?.backgroundColor = EditorRenderer.theme.backgroundColor
         editorCore = SweetEditorCore(fontSize: 14.0, fontName: "Menlo")
-        editorCore.setScrollbarConfig(ScrollbarDefaults.defaultConfig())
+        editorCore.setScrollbarConfig(scrollbarPolicy.defaultConfig())
         editorCore.setCompositionEnabled(true)
         editorCore.setReadOnly(false)
         // Sync current theme to Core first so syntax styles are registered immediately.
@@ -508,8 +519,7 @@ public class SweetEditorViewMacOS: NSView, NSTextInputClient, CompletionEditorAc
             stopCursorBlink(hideCursor: true)
             return
         }
-        installHoverTrackingArea()
-        window?.acceptsMouseMovedEvents = true
+        configureHoverRevealTracking()
         installLocalKeyMonitorIfNeeded()
         updatePerformanceOverlayRefreshState()
         updateViewportAndRedraw()
@@ -533,7 +543,21 @@ public class SweetEditorViewMacOS: NSView, NSTextInputClient, CompletionEditorAc
 
     override func updateTrackingAreas() {
         super.updateTrackingAreas()
+        configureHoverRevealTracking()
+    }
+
+    private func configureHoverRevealTracking() {
+        guard scrollbarPolicy.hoverRevealEnabled else {
+            if let hoverTrackingArea {
+                removeTrackingArea(hoverTrackingArea)
+                self.hoverTrackingArea = nil
+            }
+            window?.acceptsMouseMovedEvents = false
+            scrollbarHoverController.reset()
+            return
+        }
         installHoverTrackingArea()
+        window?.acceptsMouseMovedEvents = true
     }
 
     private func installHoverTrackingArea() {
@@ -565,8 +589,8 @@ public class SweetEditorViewMacOS: NSView, NSTextInputClient, CompletionEditorAc
     private func rebuildAndRedraw() {
         let buildStart = CACurrentMediaTime()
         renderModel = editorCore.buildRenderModel()
-        cachedScrollbarHoverRegions = ScrollbarHoverReveal.cachedRegions(
-            from: cachedScrollbarHoverRegions,
+        scrollbarHoverController.updateZones(
+            enabled: scrollbarPolicy.hoverRevealEnabled,
             latestModel: renderModel,
             fallbackMetrics: editorCore.getScrollMetrics(),
             scrollbarConfig: editorCore.scrollbarConfig
@@ -689,7 +713,8 @@ public class SweetEditorViewMacOS: NSView, NSTextInputClient, CompletionEditorAc
                                                         core: editorCore,
                                                         viewHeight: bounds.height,
                                                         iconProvider: editorIconProvider,
-                                                        isCursorBlinkVisible: isCursorBlinkVisible && isEditorFocused())
+                                                        isCursorBlinkVisible: isCursorBlinkVisible && isEditorFocused(),
+                                                        scrollbarStyle: scrollbarPolicy.visualStyle(for: EditorRenderer.theme))
 
         context.restoreGState()
 
@@ -779,7 +804,7 @@ public class SweetEditorViewMacOS: NSView, NSTextInputClient, CompletionEditorAc
             transientScrollbarRefreshTimer = nil
             return
         }
-        ScrollbarDefaults.scheduleTransientRefreshTimer(&transientScrollbarRefreshTimer) { [weak self] in
+        ScrollbarRefreshScheduler.scheduleTransientRefreshTimer(&transientScrollbarRefreshTimer) { [weak self] in
             self?.rebuildAndRedraw()
         }
     }
@@ -817,17 +842,18 @@ public class SweetEditorViewMacOS: NSView, NSTextInputClient, CompletionEditorAc
     override func mouseMoved(with event: NSEvent) {
         let point = convert(event.locationInWindow, from: nil)
         let mods = modifiersFromEvent(event)
-        if ScrollbarHoverReveal.shouldReveal(
-            at: point,
-            currentModel: renderModel,
-            cachedRegions: cachedScrollbarHoverRegions
+        if scrollbarPolicy.hoverRevealEnabled
+            && scrollbarHoverController.shouldReveal(
+                at: point,
+                currentModel: renderModel
         ) {
+            let request = scrollbarRevealTrigger.makeRevealRequest(at: point, modifiers: mods)
             let result = editorCore.handleGestureEvent(
-                type: .directScroll,
-                points: [(Float(point.x), Float(point.y))],
-                modifiers: mods,
-                wheelDeltaX: 0,
-                wheelDeltaY: 0
+                type: request.type,
+                points: request.points,
+                modifiers: request.modifiers,
+                wheelDeltaX: request.wheelDeltaX,
+                wheelDeltaY: request.wheelDeltaY
             )
             handleGestureResult(result)
             rebuildAndRedraw()
