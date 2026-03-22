@@ -261,6 +261,16 @@ namespace NS_SWEETEDITOR {
     ScrollbarRect thumb;
   };
 
+  /// Current line render mode
+  enum struct CurrentLineRenderMode {
+    /// Fill full line background
+    BACKGROUND = 0,
+    /// Draw line border only
+    BORDER = 1,
+    /// Disable current-line decoration
+    NONE = 2,
+  };
+
   /// Editor render model
   struct EditorRenderModel {
     /// Line-number split x position
@@ -277,6 +287,8 @@ namespace NS_SWEETEDITOR {
     float viewport_height {0};
     /// Current line background coordinate
     PointF current_line;
+    /// Current line render mode
+    CurrentLineRenderMode current_line_render_mode {CurrentLineRenderMode::BACKGROUND};
     /// Text lines to render visually (visible region only)
     Vector<VisualLine> lines;
     /// Cursor
@@ -453,7 +465,12 @@ namespace NS_SWEETEDITOR {
   NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(FoldMarkerRenderItem, logical_line, fold_state, origin, width, height)
   NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(ScrollbarRect, origin, width, height)
   NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(ScrollbarModel, visible, alpha, track, thumb)
-  NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(EditorRenderModel, split_x, split_line_visible, scroll_x, scroll_y, viewport_width, viewport_height, current_line, lines, cursor, selection_rects, selection_start_handle, selection_end_handle, composition_decoration, guide_segments, diagnostic_decorations, max_gutter_icons, linked_editing_rects, bracket_highlight_rects, gutter_icons, fold_markers, vertical_scrollbar, horizontal_scrollbar)
+  NLOHMANN_JSON_SERIALIZE_ENUM(CurrentLineRenderMode, {
+    {CurrentLineRenderMode::BACKGROUND, "BACKGROUND"},
+    {CurrentLineRenderMode::BORDER, "BORDER"},
+    {CurrentLineRenderMode::NONE, "NONE"},
+  })
+  NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(EditorRenderModel, split_x, split_line_visible, scroll_x, scroll_y, viewport_width, viewport_height, current_line, current_line_render_mode, lines, cursor, selection_rects, selection_start_handle, selection_end_handle, composition_decoration, guide_segments, diagnostic_decorations, max_gutter_icons, linked_editing_rects, bracket_highlight_rects, gutter_icons, fold_markers, vertical_scrollbar, horizontal_scrollbar)
   NLOHMANN_JSON_SERIALIZE_ENUM(FoldArrowMode, {
     {FoldArrowMode::AUTO, "AUTO"},
     {FoldArrowMode::ALWAYS, "ALWAYS"},

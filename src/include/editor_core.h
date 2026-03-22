@@ -98,6 +98,8 @@ namespace NS_SWEETEDITOR {
     float content_start_padding {0.0f};
     /// Whether to render the gutter split line
     bool show_split_line {true};
+    /// Current line render mode
+    CurrentLineRenderMode current_line_render_mode {CurrentLineRenderMode::BACKGROUND};
 
     U8String dump() const;
   };
@@ -223,6 +225,10 @@ namespace NS_SWEETEDITOR {
     /// Set whether to show gutter split line
     /// @param show true=show split line, false=hide split line
     void setShowSplitLine(bool show);
+
+    /// Set current line render mode
+    /// @param mode BACKGROUND=fill line background, BORDER=draw line border, NONE=disable
+    void setCurrentLineRenderMode(CurrentLineRenderMode mode);
 #pragma endregion
 
 #pragma region [Rendering]

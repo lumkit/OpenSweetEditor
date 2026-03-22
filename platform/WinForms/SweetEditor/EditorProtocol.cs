@@ -802,6 +802,7 @@ namespace SweetEditor {
 				!TryReadFloat(data, ref offset, out float viewportWidth) ||
 				!TryReadFloat(data, ref offset, out float viewportHeight) ||
 				!TryReadPointF(data, ref offset, out PointF currentLine) ||
+				!TryReadInt32(data, ref offset, out int currentLineRenderModeValue) ||
 				!TryReadInt32(data, ref offset, out int lineCount) ||
 				lineCount < 0) {
 				return model;
@@ -814,6 +815,9 @@ namespace SweetEditor {
 			model.ViewportWidth = viewportWidth;
 			model.ViewportHeight = viewportHeight;
 			model.CurrentLine = currentLine;
+			model.CurrentLineRenderMode = Enum.IsDefined(typeof(CurrentLineRenderMode), currentLineRenderModeValue)
+				? (CurrentLineRenderMode)currentLineRenderModeValue
+				: CurrentLineRenderMode.BACKGROUND;
 
 			List<VisualLine> lines = new(lineCount);
 			for (int i = 0; i < lineCount; i++) {

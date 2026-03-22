@@ -19,6 +19,7 @@ import com.qiplat.sweeteditor.EditorSettings;
 import com.qiplat.sweeteditor.EditorTheme;
 import com.qiplat.sweeteditor.SweetEditor;
 import com.qiplat.sweeteditor.core.Document;
+import com.qiplat.sweeteditor.core.foundation.CurrentLineRenderMode;
 import com.qiplat.sweeteditor.core.foundation.FoldArrowMode;
 import com.qiplat.sweeteditor.core.foundation.WrapMode;
 import com.qiplat.sweeteditor.event.GutterIconClickEvent;
@@ -60,6 +61,7 @@ public class MainActivity extends AppCompatActivity {
         settings.setEditorTextSize(36f);
         settings.setFoldArrowMode(FoldArrowMode.AUTO);
         settings.setMaxGutterIcons(1);
+        settings.setCurrentLineRenderMode(CurrentLineRenderMode.BORDER);
         registerColorStyleForCurrentTheme();
 
         try {

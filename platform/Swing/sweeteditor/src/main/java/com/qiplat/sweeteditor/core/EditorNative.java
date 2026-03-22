@@ -277,6 +277,9 @@ public final class EditorNative {
     private static final MethodHandle SET_SHOW_SPLIT_LINE = downcall("editor_set_show_split_line",
             FunctionDescriptor.ofVoid(ValueLayout.JAVA_LONG, ValueLayout.JAVA_INT));
 
+    private static final MethodHandle SET_CURRENT_LINE_RENDER_MODE = downcall("editor_set_current_line_render_mode",
+            FunctionDescriptor.ofVoid(ValueLayout.JAVA_LONG, ValueLayout.JAVA_INT));
+
     private static final MethodHandle BUILD_RENDER_MODEL = downcall("build_editor_render_model",
             FunctionDescriptor.of(ValueLayout.ADDRESS, ValueLayout.JAVA_LONG, ValueLayout.ADDRESS));
 
@@ -671,6 +674,12 @@ public final class EditorNative {
     public static void setShowSplitLine(long handle, boolean show) {
         invokeVoid(() -> {
             SET_SHOW_SPLIT_LINE.invokeExact(handle, show ? 1 : 0);
+        });
+    }
+
+    public static void setCurrentLineRenderMode(long handle, int mode) {
+        invokeVoid(() -> {
+            SET_CURRENT_LINE_RENDER_MODE.invokeExact(handle, mode);
         });
     }
 

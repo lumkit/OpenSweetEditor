@@ -115,6 +115,8 @@ namespace SweetEditor {
 		public Color SelectionColor { get; set; }
 		/// <summary>Line number text color (ARGB).</summary>
 		public Color LineNumberColor { get; set; }
+		/// <summary>Current line number text color (ARGB).</summary>
+		public Color CurrentLineNumberColor { get; set; }
 		/// <summary>Current line highlight background color (ARGB, typically semi-transparent).</summary>
 		public Color CurrentLineColor { get; set; }
 
@@ -195,6 +197,7 @@ namespace SweetEditor {
 			CursorColor = Color.FromArgb(unchecked((int)0xFF8FB8FF)),
 			SelectionColor = Color.FromArgb(unchecked((int)0x553B4F72)),
 			LineNumberColor = Color.FromArgb(unchecked((int)0xFF5E6778)),
+			CurrentLineNumberColor = Color.FromArgb(unchecked((int)0xFF9CB3D6)),
 			CurrentLineColor = Color.FromArgb(unchecked((int)0x163A4A66)),
 			GuideColor = Color.FromArgb(unchecked((int)0x2E56617A)),
 			SeparatorColor = Color.FromArgb(unchecked((int)0xFF4A8F7A)),
@@ -241,6 +244,7 @@ namespace SweetEditor {
 			CursorColor = Color.FromArgb(unchecked((int)0xFF2563EB)),
 			SelectionColor = Color.FromArgb(unchecked((int)0x4D60A5FA)),
 			LineNumberColor = Color.FromArgb(unchecked((int)0xFF8A94A6)),
+			CurrentLineNumberColor = Color.FromArgb(unchecked((int)0xFF3A5FA0)),
 			CurrentLineColor = Color.FromArgb(unchecked((int)0x120D3B66)),
 			GuideColor = Color.FromArgb(unchecked((int)0x2229426B)),
 			SeparatorColor = Color.FromArgb(unchecked((int)0xFF2F855A)),

@@ -5,6 +5,7 @@ import android.graphics.Typeface;
 import androidx.annotation.NonNull;
 
 import com.qiplat.sweeteditor.core.foundation.AutoIndentMode;
+import com.qiplat.sweeteditor.core.foundation.CurrentLineRenderMode;
 import com.qiplat.sweeteditor.core.foundation.FoldArrowMode;
 import com.qiplat.sweeteditor.core.foundation.WrapMode;
 
@@ -26,6 +27,7 @@ public class EditorSettings {
     private float mLineSpacingMult = 1.0f;
     private float mContentStartPadding = 0f;
     private boolean mShowSplitLine = true;
+    private CurrentLineRenderMode mCurrentLineRenderMode = CurrentLineRenderMode.BACKGROUND;
     private AutoIndentMode mAutoIndentMode = AutoIndentMode.NONE;
     private boolean mReadOnly = false;
     private int mMaxGutterIcons = 0;
@@ -120,6 +122,17 @@ public class EditorSettings {
 
     public boolean isShowSplitLine() {
         return mShowSplitLine;
+    }
+
+    public void setCurrentLineRenderMode(@NonNull CurrentLineRenderMode mode) {
+        mCurrentLineRenderMode = mode;
+        mEditor.getEditorCore().setCurrentLineRenderMode(mode.value);
+        mEditor.flush();
+    }
+
+    @NonNull
+    public CurrentLineRenderMode getCurrentLineRenderMode() {
+        return mCurrentLineRenderMode;
     }
 
     public void setAutoIndentMode(@NonNull AutoIndentMode mode) {

@@ -16,6 +16,7 @@ import com.qiplat.sweeteditor.core.HandleConfig;
 import com.qiplat.sweeteditor.core.ScrollbarConfig;
 import com.qiplat.sweeteditor.core.TextMeasurer;
 import com.qiplat.sweeteditor.core.adornment.TextStyle;
+import com.qiplat.sweeteditor.core.foundation.CurrentLineRenderMode;
 import com.qiplat.sweeteditor.core.visual.*;
 import com.qiplat.sweeteditor.perf.MeasurePerfStats;
 import com.qiplat.sweeteditor.perf.PerfOverlay;
@@ -290,12 +291,7 @@ final class EditorRenderer {
         canvas.drawColor(mTheme.backgroundColor);
         if (drawPerf != null) drawPerf.mark(PerfStepRecorder.STEP_CLEAR);
 
-        if (model.currentLine != null) {
-            float lineHeight = model.cursor != null ? model.cursor.height : 20;
-            canvas.drawRect(0, model.currentLine.y,
-                    viewWidth, model.currentLine.y + lineHeight,
-                    mCurrentLinePaint);
-        }
+        drawCurrentLineDecoration(canvas, model, 0f, viewWidth);
         if (drawPerf != null) drawPerf.mark(PerfStepRecorder.STEP_CURRENT);
 
         drawSelectionRects(canvas, model.selectionRects);
@@ -324,12 +320,7 @@ final class EditorRenderer {
 
         if (model.splitX > 0) {
             canvas.drawRect(0, 0, model.splitX, viewHeight, mBackgroundPaint);
-            if (model.currentLine != null) {
-                float lineHeight = model.cursor != null ? model.cursor.height : 20;
-                canvas.drawRect(0, model.currentLine.y,
-                        model.splitX, model.currentLine.y + lineHeight,
-                        mCurrentLinePaint);
-            }
+            drawCurrentLineDecoration(canvas, model, 0f, model.splitX);
             if (model.splitLineVisible) {
                 canvas.drawLine(model.splitX, 0, model.splitX, viewHeight, mSplitLinePaint);
             }
@@ -492,10 +483,14 @@ final class EditorRenderer {
         int iconCursor = 0;
         int markerCursor = 0;
         boolean overlayMode = (model.maxGutterIcons == 0);
+        final int activeLogicalLine = getActiveLogicalLine(model);
+        final int normalLineNumberColor = mTheme.lineNumberColor;
+        final int activeLineNumberColor = getActiveLineNumberColor();
         Path arrowPath = new Path();
         for (VisualLine line : model.lines) {
             if (line.wrapIndex == 0 && !line.isPhantomLine && line.lineNumberPosition != null) {
                 final int logicalLine = line.logicalLine;
+                final boolean isCurrentLine = logicalLine == activeLogicalLine;
 
                 while (iconCursor < iconCount && gutterIcons.get(iconCursor).logicalLine < logicalLine) {
                     iconCursor++;
@@ -510,6 +505,7 @@ final class EditorRenderer {
                 if (overlayMode && hasIcons) {
                     drawGutterIconItem(canvas, gutterIcons.get(iconStart));
                 } else {
+                    mLineNumberPaint.setColor(isCurrentLine ? activeLineNumberColor : normalLineNumberColor);
                     String lineNumStr = String.valueOf(line.logicalLine + 1);
                     canvas.drawText(lineNumStr,
                             line.lineNumberPosition.x, line.lineNumberPosition.y,
@@ -530,7 +526,13 @@ final class EditorRenderer {
                     if (foldMarker == null) foldMarker = foldMarkers.get(markerCursor);
                     markerCursor++;
                 }
-                if (foldMarker != null) drawFoldMarkerItem(canvas, foldMarker, arrowPath);
+                if (foldMarker != null) {
+                    drawFoldMarkerItem(
+                            canvas,
+                            foldMarker,
+                            arrowPath,
+                            isCurrentLine ? activeLineNumberColor : normalLineNumberColor);
+                }
             }
         }
     }
@@ -547,13 +549,15 @@ final class EditorRenderer {
         drawable.draw(canvas);
     }
 
-    private void drawFoldMarkerItem(@NonNull Canvas canvas, @NonNull FoldMarkerRenderItem item, @NonNull Path arrowPath) {
+    private void drawFoldMarkerItem(@NonNull Canvas canvas, @NonNull FoldMarkerRenderItem item,
+                                    @NonNull Path arrowPath, int color) {
         if (item.origin == null || item.width <= 0f || item.height <= 0f) return;
         if (item.foldState == null || item.foldState == FoldState.NONE) return;
 
         float centerX = item.origin.x + item.width * 0.5f;
         float centerY = item.origin.y + item.height * 0.5f;
         float halfSize = Math.min(item.width, item.height) * 0.28f;
+        mFoldArrowPaint.setColor(color);
         mFoldArrowPaint.setStrokeWidth(Math.max(1f, item.height * 0.1f));
 
         arrowPath.reset();
@@ -567,6 +571,53 @@ final class EditorRenderer {
             arrowPath.lineTo(centerX + halfSize, centerY - halfSize * 0.5f);
         }
         canvas.drawPath(arrowPath, mFoldArrowPaint);
+    }
+
+    private void drawCurrentLineDecoration(@NonNull Canvas canvas, @NonNull EditorRenderModel model,
+                                           float left, float right) {
+        if (model.currentLine == null) return;
+        if (right <= left) return;
+        if (model.currentLineRenderMode == CurrentLineRenderMode.NONE.value) return;
+        float lineHeight = model.cursor != null ? model.cursor.height : 20f;
+        float top = model.currentLine.y;
+        float bottom = top + lineHeight;
+        if (model.currentLineRenderMode == CurrentLineRenderMode.BORDER.value) {
+            int prevColor = mCurrentLinePaint.getColor();
+            Paint.Style prevStyle = mCurrentLinePaint.getStyle();
+            float prevStroke = mCurrentLinePaint.getStrokeWidth();
+            mCurrentLinePaint.setColor(getCurrentLineBorderColor());
+            mCurrentLinePaint.setStyle(Paint.Style.STROKE);
+            mCurrentLinePaint.setStrokeWidth(Math.max(1f, mDensity));
+            canvas.drawRect(left, top, right, bottom, mCurrentLinePaint);
+            mCurrentLinePaint.setColor(prevColor);
+            mCurrentLinePaint.setStyle(prevStyle);
+            mCurrentLinePaint.setStrokeWidth(prevStroke);
+            return;
+        }
+        mCurrentLinePaint.setColor(mTheme.currentLineColor);
+        mCurrentLinePaint.setStyle(Paint.Style.FILL);
+        canvas.drawRect(left, top, right, bottom, mCurrentLinePaint);
+    }
+
+    private int getActiveLogicalLine(@NonNull EditorRenderModel model) {
+        if (model.cursor == null || model.cursor.textPosition == null) return -1;
+        return model.cursor.textPosition.line;
+    }
+
+    private int getActiveLineNumberColor() {
+        int color = mTheme.currentLineNumberColor;
+        if (color == 0) color = mTheme.lineNumberColor;
+        return (color & 0x00FFFFFF) | 0xFF000000;
+    }
+
+    private int getCurrentLineBorderColor() {
+        int color = mTheme.currentLineColor;
+        if (color == 0) color = mTheme.lineNumberColor;
+        int alpha = (color >>> 24) & 0xFF;
+        if (alpha < 0xA0) {
+            color = (color & 0x00FFFFFF) | (0xA0 << 24);
+        }
+        return color;
     }
 
     /**

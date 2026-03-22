@@ -44,6 +44,8 @@ public class EditorTheme {
     public Color selectionColor;
     /** Line number text color. */
     public Color lineNumberColor;
+    /** Current line number text color. */
+    public Color currentLineNumberColor;
     /** Current line highlight background color, recommended to include alpha. */
     public Color currentLineColor;
 
@@ -128,6 +130,7 @@ public class EditorTheme {
         t.cursorColor               = argb(0xFF8FB8FF);
         t.selectionColor            = argb(0x553B4F72);
         t.lineNumberColor           = argb(0xFF5E6778);
+        t.currentLineNumberColor    = argb(0xFF9CB3D6);
         t.currentLineColor          = argb(0x163A4A66);
         t.guideColor                = argb(0x2E56617A);
         t.separatorLineColor        = argb(0xFF4A8F7A);
@@ -175,6 +178,7 @@ public class EditorTheme {
         t.cursorColor               = argb(0xFF2563EB);
         t.selectionColor            = argb(0x4D60A5FA);
         t.lineNumberColor           = argb(0xFF8A94A6);
+        t.currentLineNumberColor    = argb(0xFF3A5FA0);
         t.currentLineColor          = argb(0x120D3B66);
         t.guideColor                = argb(0x2229426B);
         t.separatorLineColor        = argb(0xFF2F855A);

@@ -42,6 +42,8 @@ public class EditorTheme {
     public int selectionColor;
     /** Line number text color (ARGB). */
     public int lineNumberColor;
+    /** Current line number text color (ARGB). */
+    public int currentLineNumberColor;
     /** Current line highlight background color (ARGB, recommended to include transparency). */
     public int currentLineColor;
 
@@ -128,6 +130,7 @@ public class EditorTheme {
         t.cursorColor               = 0xFF8FB8FF;
         t.selectionColor            = 0x553B4F72;
         t.lineNumberColor           = 0xFF5E6778;
+        t.currentLineNumberColor    = 0xFF9CB3D6;
         t.currentLineColor          = 0x163A4A66;
         t.guideColor                = 0x2E56617A;
         t.separatorLineColor        = 0xFF4A8F7A;
@@ -177,6 +180,7 @@ public class EditorTheme {
         t.cursorColor               = 0xFF2563EB;
         t.selectionColor            = 0x4D60A5FA;
         t.lineNumberColor           = 0xFF8A94A6;
+        t.currentLineNumberColor    = 0xFF3A5FA0;
         t.currentLineColor          = 0x120D3B66;
         t.guideColor                = 0x2229426B;
         t.separatorLineColor        = 0xFF2F855A;

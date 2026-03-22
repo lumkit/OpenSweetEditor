@@ -11,6 +11,7 @@ public class EditorRenderModel {
     @SerializedName("viewport_width") public float viewportWidth;
     @SerializedName("viewport_height") public float viewportHeight;
     @SerializedName("current_line") public PointF currentLine;
+    @SerializedName("current_line_render_mode") public int currentLineRenderMode;
     @SerializedName("lines") public List<VisualLine> lines;
     @SerializedName("gutter_icons") public List<GutterIconRenderItem> gutterIcons;
     @SerializedName("fold_markers") public List<FoldMarkerRenderItem> foldMarkers;

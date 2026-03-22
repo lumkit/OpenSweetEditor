@@ -260,6 +260,7 @@ static const uint8_t* editorRenderModelToBinary(const EditorRenderModel& model, 
   appendF32(buffer, model.viewport_width);
   appendF32(buffer, model.viewport_height);
   appendPoint(buffer, model.current_line);
+  appendI32(buffer, static_cast<int32_t>(model.current_line_render_mode));
 
   appendI32(buffer, static_cast<int32_t>(model.lines.size()));
   for (const auto& line : model.lines) {
@@ -626,6 +627,14 @@ void editor_set_show_split_line(intptr_t editor_handle, int show) {
     return;
   }
   editor_core->setShowSplitLine(show != 0);
+}
+
+void editor_set_current_line_render_mode(intptr_t editor_handle, int mode) {
+  Ptr<EditorCore> editor_core = getCPtrHolderValue<EditorCore>(editor_handle);
+  if (editor_core == nullptr) {
+    return;
+  }
+  editor_core->setCurrentLineRenderMode(static_cast<CurrentLineRenderMode>(mode));
 }
 
 #pragma endregion

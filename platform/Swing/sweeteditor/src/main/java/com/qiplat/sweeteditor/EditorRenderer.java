@@ -3,6 +3,7 @@ package com.qiplat.sweeteditor;
 import com.qiplat.sweeteditor.core.EditorCore;
 import com.qiplat.sweeteditor.core.EditorNative;
 import com.qiplat.sweeteditor.core.adornment.TextStyle;
+import com.qiplat.sweeteditor.core.foundation.CurrentLineRenderMode;
 import com.qiplat.sweeteditor.core.visual.*;
 
 import java.awt.*;
@@ -141,7 +142,7 @@ final class EditorRenderer implements EditorCore.TextMeasureCallback {
 
         if (model == null) return;
 
-        drawCurrentLineHighlight(g2, model, viewWidth);
+        drawCurrentLineDecoration(g2, model, 0f, viewWidth);
         drawSelectionRects(g2, model);
         drawLines(g2, model);
         drawGuideSegments(g2, model);
@@ -185,11 +186,20 @@ final class EditorRenderer implements EditorCore.TextMeasureCallback {
         return fm.getAscent() + fm.getDescent();
     }
 
-    private void drawCurrentLineHighlight(Graphics2D g, EditorRenderModel model, float width) {
-        if (model.lines == null || model.lines.isEmpty()) return;
+    private void drawCurrentLineDecoration(Graphics2D g, EditorRenderModel model, float left, float width) {
+        if (width <= 0f || model.currentLine == null) return;
+        if (model.currentLineRenderMode == CurrentLineRenderMode.NONE.value) return;
         float lineH = model.cursor != null && model.cursor.height > 0 ? model.cursor.height : getFontHeight(g, regularFont);
+        if (model.currentLineRenderMode == CurrentLineRenderMode.BORDER.value) {
+            Stroke oldStroke = g.getStroke();
+            g.setColor(getCurrentLineBorderColor());
+            g.setStroke(new BasicStroke(1f));
+            g.draw(new Rectangle2D.Float(left, model.currentLine.y, width, lineH));
+            g.setStroke(oldStroke);
+            return;
+        }
         g.setColor(theme.currentLineColor);
-        g.fillRect(0, (int) model.currentLine.y, (int) width, (int) lineH);
+        g.fill(new Rectangle2D.Float(left, model.currentLine.y, width, lineH));
     }
 
     private void drawSelectionRects(Graphics2D g, EditorRenderModel model) {
@@ -287,7 +297,7 @@ final class EditorRenderer implements EditorCore.TextMeasureCallback {
         if (model.splitX <= 0) return;
         g.setColor(theme.backgroundColor);
         g.fillRect(0, 0, (int) model.splitX, viewHeight);
-        drawCurrentLineHighlight(g, model, model.splitX);
+        drawCurrentLineDecoration(g, model, 0f, model.splitX);
         if (model.splitLineVisible) {
             g.setColor(theme.splitLineColor);
             g.drawLine((int) model.splitX, 0, (int) model.splitX, viewHeight);
@@ -302,6 +312,8 @@ final class EditorRenderer implements EditorCore.TextMeasureCallback {
         int markerCount = foldMarkers != null ? foldMarkers.size() : 0;
         int iconCursor = 0;
         int markerCursor = 0;
+        int activeLogicalLine = getActiveLogicalLine(model);
+        Color activeLineColor = getCurrentLineAccentColor();
         currentDrawingLineNumber = -1;
         for (VisualLine line : model.lines) {
             if (line.wrapIndex != 0 || line.isPhantomLine) continue;
@@ -325,7 +337,16 @@ final class EditorRenderer implements EditorCore.TextMeasureCallback {
                 markerCursor++;
             }
 
-            drawLineNumber(g, line, model, gutterIcons, iconStart, iconEnd, foldMarker);
+            drawLineNumber(
+                    g,
+                    line,
+                    model,
+                    gutterIcons,
+                    iconStart,
+                    iconEnd,
+                    foldMarker,
+                    logicalLine == activeLogicalLine,
+                    activeLineColor);
         }
     }
 
@@ -333,7 +354,9 @@ final class EditorRenderer implements EditorCore.TextMeasureCallback {
                                 List<GutterIconRenderItem> gutterIcons,
                                 int iconStart,
                                 int iconEnd,
-                                FoldMarkerRenderItem foldMarker) {
+                                FoldMarkerRenderItem foldMarker,
+                                boolean isCurrentLine,
+                                Color activeLineColor) {
         PointF pos = vl.lineNumberPosition;
         int newLineNumber = vl.logicalLine + 1;
         boolean overlayMode = model.maxGutterIcons == 0;
@@ -343,7 +366,7 @@ final class EditorRenderer implements EditorCore.TextMeasureCallback {
             drawGutterIcon(g, gutterIcons.get(iconStart));
             currentDrawingLineNumber = newLineNumber;
         } else if (newLineNumber != currentDrawingLineNumber) {
-            g.setColor(theme.lineNumberColor);
+            g.setColor(isCurrentLine ? activeLineColor : theme.lineNumberColor);
             g.setFont(regularFont);
             g.drawString(String.valueOf(newLineNumber), pos.x, pos.y);
             currentDrawingLineNumber = newLineNumber;
@@ -355,10 +378,10 @@ final class EditorRenderer implements EditorCore.TextMeasureCallback {
             }
         }
 
-        drawFoldMarker(g, foldMarker);
+        drawFoldMarker(g, foldMarker, isCurrentLine ? activeLineColor : theme.lineNumberColor);
     }
 
-    private void drawFoldMarker(Graphics2D g, FoldMarkerRenderItem item) {
+    private void drawFoldMarker(Graphics2D g, FoldMarkerRenderItem item, Color color) {
         if (item == null || item.origin == null || item.width <= 0 || item.height <= 0) return;
         if (item.foldState == null || item.foldState == FoldState.NONE) return;
 
@@ -366,7 +389,7 @@ final class EditorRenderer implements EditorCore.TextMeasureCallback {
         float centerY = item.origin.y + item.height * 0.5f;
         float halfSize = Math.min(item.width, item.height) * 0.28f;
 
-        g.setColor(theme.lineNumberColor);
+        g.setColor(color);
         g.setStroke(new BasicStroke(Math.max(1f, item.height * 0.1f), BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND));
 
         GeneralPath path = new GeneralPath();
@@ -380,6 +403,27 @@ final class EditorRenderer implements EditorCore.TextMeasureCallback {
             path.lineTo(centerX + halfSize, centerY - halfSize * 0.5f);
         }
         g.draw(path);
+    }
+
+    private int getActiveLogicalLine(EditorRenderModel model) {
+        if (model.cursor == null || model.cursor.textPosition == null) return -1;
+        return model.cursor.textPosition.line;
+    }
+
+    private Color getCurrentLineAccentColor() {
+        int argb = theme.currentLineNumberColor != null ? theme.currentLineNumberColor.getRGB() : 0;
+        if (argb == 0) argb = theme.lineNumberColor.getRGB();
+        return new Color((argb & 0x00FFFFFF) | 0xFF000000, true);
+    }
+
+    private Color getCurrentLineBorderColor() {
+        int argb = theme.currentLineColor.getRGB();
+        if (argb == 0) argb = theme.lineNumberColor.getRGB();
+        int alpha = (argb >>> 24) & 0xFF;
+        if (alpha < 0xA0) {
+            argb = (argb & 0x00FFFFFF) | (0xA0 << 24);
+        }
+        return new Color(argb, true);
     }
 
     private boolean drawGutterIcon(Graphics2D g, GutterIconRenderItem item) {

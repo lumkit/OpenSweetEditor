@@ -36,6 +36,10 @@ public class EditorRenderModel {
     @SerializedName("current_line")
     public PointF currentLine;
 
+    /** Current line render mode (0=BACKGROUND, 1=BORDER, 2=NONE). */
+    @SerializedName("current_line_render_mode")
+    public int currentLineRenderMode;
+
     /** Text lines to render visually (visible region only). */
     @SerializedName("lines")
     public List<VisualLine> lines;

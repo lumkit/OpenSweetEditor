@@ -51,6 +51,7 @@ namespace NS_SWEETEDITOR {
         + ", enable_composition = " + (enable_composition ? "true" : "false")
         + ", content_start_padding = " + std::to_string(content_start_padding)
         + ", show_split_line = " + (show_split_line ? "true" : "false")
+        + ", current_line_render_mode = " + std::to_string(static_cast<int>(current_line_render_mode))
         + ", scrollbar.thickness = " + std::to_string(scrollbar.thickness)
         + ", scrollbar.min_thumb = " + std::to_string(scrollbar.min_thumb)
         + ", scrollbar.thumb_hit_padding = " + std::to_string(scrollbar.thumb_hit_padding)
@@ -176,6 +177,11 @@ namespace NS_SWEETEDITOR {
     if (m_settings_.show_split_line == show) return;
     m_settings_.show_split_line = show;
   }
+
+  void EditorCore::setCurrentLineRenderMode(CurrentLineRenderMode mode) {
+    if (m_settings_.current_line_render_mode == mode) return;
+    m_settings_.current_line_render_mode = mode;
+  }
 #pragma endregion
 
 #pragma region [Rendering]
@@ -188,6 +194,7 @@ namespace NS_SWEETEDITOR {
     PERF_BEGIN(compose);
     m_text_layout_->layoutVisibleLines(model);
     model.split_line_visible = m_settings_.show_split_line;
+    model.current_line_render_mode = m_settings_.current_line_render_mode;
     PERF_END(compose, "buildRenderModel::layoutVisibleLines");
 
     float line_height = m_text_layout_->getLineHeight();

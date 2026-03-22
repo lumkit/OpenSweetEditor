@@ -27,6 +27,7 @@ final class ProtocolDecoder {
         model.viewportWidth = data.getFloat();
         model.viewportHeight = data.getFloat();
         model.currentLine = readPoint(data);
+        model.currentLineRenderMode = data.getInt();
         model.lines = readVisualLines(data);
         model.gutterIcons = readGutterIconRenderItems(data);
         model.foldMarkers = readFoldMarkerRenderItems(data);

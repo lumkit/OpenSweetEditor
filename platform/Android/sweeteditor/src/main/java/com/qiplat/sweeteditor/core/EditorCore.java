@@ -172,6 +172,16 @@ public class EditorCore {
         nativeSetShowSplitLine(mNativeHandle, show);
     }
 
+    /**
+     * Sets current line render mode.
+     *
+     * @param mode 0=BACKGROUND(fill), 1=BORDER(stroke), 2=NONE(disabled)
+     */
+    public void setCurrentLineRenderMode(int mode) {
+        if (mNativeHandle == 0) return;
+        nativeSetCurrentLineRenderMode(mNativeHandle, mode);
+    }
+
     // ==================== Rendering ====================
 
     @Nullable
@@ -1619,6 +1629,9 @@ public class EditorCore {
 
     @CriticalNative
     private static native void nativeSetShowSplitLine(long handle, boolean show);
+
+    @CriticalNative
+    private static native void nativeSetCurrentLineRenderMode(long handle, int mode);
 
     @FastNative
     private static native ByteBuffer nativeBuildRenderModel(long handle);

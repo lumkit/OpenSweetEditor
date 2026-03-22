@@ -664,6 +664,10 @@ public:
     editor_set_show_split_line(static_cast<intptr_t>(handle), show == JNI_TRUE ? 1 : 0);
   }
 
+  static void setCurrentLineRenderMode(jlong handle, jint mode) {
+    editor_set_current_line_render_mode(static_cast<intptr_t>(handle), static_cast<int>(mode));
+  }
+
   static jobject editorUndo(JNIEnv* env, jclass clazz, jlong handle) {
     if (handle == 0) return nullptr;
     size_t out_size = 0;
@@ -882,6 +886,7 @@ public:
       {"nativeSetLineSpacing", "(JFF)V", (void*) setLineSpacing},
       {"nativeSetContentStartPadding", "(JF)V", (void*) setContentStartPadding},
       {"nativeSetShowSplitLine", "(JZ)V", (void*) setShowSplitLine},
+      {"nativeSetCurrentLineRenderMode", "(JI)V", (void*) setCurrentLineRenderMode},
       {"nativeUndo", "(J)Ljava/nio/ByteBuffer;", (void*) editorUndo},
       {"nativeRedo", "(J)Ljava/nio/ByteBuffer;", (void*) editorRedo},
       {"nativeCanUndo", "(J)Z", (void*) editorCanUndo},

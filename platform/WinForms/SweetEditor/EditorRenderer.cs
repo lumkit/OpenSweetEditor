@@ -213,7 +213,7 @@ namespace SweetEditor {
 			g.TextRenderingHint = TextRenderingHint.ClearTypeGridFit;
 			g.SmoothingMode = SmoothingMode.AntiAlias;
 
-			DrawCurrentLineHighlight(g, modelValue, clientSize.Width);
+			DrawCurrentLineDecoration(g, modelValue, 0f, clientSize.Width);
 			perf.Mark(PerfStepRecorder.StepCurrent);
 			DrawSelectionRects(g, modelValue);
 			perf.Mark(PerfStepRecorder.StepSelection);
@@ -262,7 +262,7 @@ namespace SweetEditor {
 			if (model.SplitX <= 0) return;
 			using var brush = new SolidBrush(currentTheme.BackgroundColor);
 			g.FillRectangle(brush, 0, 0, model.SplitX, clientHeight);
-			DrawCurrentLineHighlight(g, model, model.SplitX);
+			DrawCurrentLineDecoration(g, model, 0f, model.SplitX);
 			if (model.SplitLineVisible) {
 				DrawLineSplit(g, model.SplitX, clientHeight);
 			}
@@ -277,6 +277,8 @@ namespace SweetEditor {
 			int markerCount = foldMarkers?.Count ?? 0;
 			int iconCursor = 0;
 			int markerCursor = 0;
+			int activeLogicalLine = GetActiveLogicalLine(model);
+			Color activeLineColor = GetCurrentLineAccentColor();
 			currentDrawingLineNumber = -1;
 			foreach (var line in lines) {
 				if (line.WrapIndex != 0 || line.IsPhantomLine) continue;
@@ -304,7 +306,17 @@ namespace SweetEditor {
 					markerCursor++;
 				}
 
-				DrawLineNumber(g, line, model, gutterIcons, iconStart, iconEnd, hasMarker, foldMarker);
+				DrawLineNumber(
+					g,
+					line,
+					model,
+					gutterIcons,
+					iconStart,
+					iconEnd,
+					hasMarker,
+					foldMarker,
+					logicalLine == activeLogicalLine,
+					activeLineColor);
 			}
 		}
 
@@ -353,7 +365,8 @@ namespace SweetEditor {
 		private void DrawLineNumber(Graphics g, VisualLine visualLine, EditorRenderModel model,
 			List<GutterIconRenderItem>? gutterIcons,
 			int iconStart, int iconEnd,
-			bool hasFoldMarker, FoldMarkerRenderItem foldMarker) {
+			bool hasFoldMarker, FoldMarkerRenderItem foldMarker,
+			bool isCurrentLine, Color activeLineColor) {
 			PointF position = visualLine.LineNumberPosition;
 			float topY = position.Y - GetFontAscent(g, regularFont);
 			bool overlayMode = model.MaxGutterIcons == 0;
@@ -364,7 +377,13 @@ namespace SweetEditor {
 				currentDrawingLineNumber = newLineNumber;
 			} else if (newLineNumber != currentDrawingLineNumber) {
 				var rect = new Rectangle((int)position.X, (int)topY, 120, (int)Math.Ceiling(regularFont.GetHeight(g)));
-				TextRenderer.DrawText(g, newLineNumber.ToString(), regularFont, rect, currentTheme.LineNumberColor, TextMeasureDrawFlags);
+				TextRenderer.DrawText(
+					g,
+					newLineNumber.ToString(),
+					regularFont,
+					rect,
+					isCurrentLine ? activeLineColor : currentTheme.LineNumberColor,
+					TextMeasureDrawFlags);
 				currentDrawingLineNumber = newLineNumber;
 			}
 
@@ -375,7 +394,7 @@ namespace SweetEditor {
 			}
 
 			if (hasFoldMarker) {
-				DrawFoldMarker(g, foldMarker);
+				DrawFoldMarker(g, foldMarker, isCurrentLine ? activeLineColor : currentTheme.LineNumberColor);
 			}
 		}
 
@@ -400,7 +419,7 @@ namespace SweetEditor {
 			return true;
 		}
 
-		private void DrawFoldMarker(Graphics g, FoldMarkerRenderItem marker) {
+		private void DrawFoldMarker(Graphics g, FoldMarkerRenderItem marker, Color color) {
 			if (marker.Width <= 0 || marker.Height <= 0) return;
 			if (marker.FoldState == FoldState.NONE) return;
 
@@ -409,7 +428,7 @@ namespace SweetEditor {
 			float halfSize = Math.Min(marker.Width, marker.Height) * 0.28f;
 
 			using var path = new GraphicsPath();
-			using var pen = new Pen(currentTheme.LineNumberColor, Math.Max(1f, marker.Height * 0.1f)) {
+			using var pen = new Pen(color, Math.Max(1f, marker.Height * 0.1f)) {
 				StartCap = LineCap.Round,
 				EndCap = LineCap.Round,
 				LineJoin = LineJoin.Round
@@ -542,11 +561,35 @@ namespace SweetEditor {
 			}
 		}
 
-		private void DrawCurrentLineHighlight(Graphics g, EditorRenderModel model, float width) {
-			if (model.VisualLines == null || model.VisualLines.Count == 0) return;
+		private void DrawCurrentLineDecoration(Graphics g, EditorRenderModel model, float left, float width) {
+			if (width <= 0f) return;
 			float lineH = model.Cursor.Height > 0 ? model.Cursor.Height : regularFont.GetHeight(g);
+			if (model.CurrentLineRenderMode == CurrentLineRenderMode.NONE) return;
+			if (model.CurrentLineRenderMode == CurrentLineRenderMode.BORDER) {
+				using var pen = new Pen(GetCurrentLineBorderColor(), 1f);
+				g.DrawRectangle(pen, left, model.CurrentLine.Y, width, lineH);
+				return;
+			}
 			using var brush = new SolidBrush(currentTheme.CurrentLineColor);
-			g.FillRectangle(brush, 0, model.CurrentLine.Y, width, lineH);
+			g.FillRectangle(brush, left, model.CurrentLine.Y, width, lineH);
+		}
+
+		private int GetActiveLogicalLine(EditorRenderModel model) => model.Cursor.TextPosition.Line;
+
+		private Color GetCurrentLineAccentColor() {
+			int argb = currentTheme.CurrentLineNumberColor.ToArgb();
+			if (argb == 0) argb = currentTheme.LineNumberColor.ToArgb();
+			return Color.FromArgb(unchecked((int)((uint)argb | 0xFF000000u)));
+		}
+
+		private Color GetCurrentLineBorderColor() {
+			int argb = currentTheme.CurrentLineColor.ToArgb();
+			if (argb == 0) argb = currentTheme.LineNumberColor.ToArgb();
+			int alpha = (argb >> 24) & 0xFF;
+			if (alpha < 0xA0) {
+				argb = (argb & 0x00FFFFFF) | unchecked((int)0xA0000000);
+			}
+			return Color.FromArgb(argb);
 		}
 
 		private void DrawSelectionRects(Graphics g, EditorRenderModel model) {

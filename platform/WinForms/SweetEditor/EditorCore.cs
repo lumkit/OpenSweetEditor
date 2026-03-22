@@ -180,6 +180,18 @@ namespace SweetEditor {
 	}
 
 	/// <summary>
+	/// Current line render mode.
+	/// </summary>
+	public enum CurrentLineRenderMode {
+		/// <summary>Fill the entire current line background.</summary>
+		BACKGROUND = 0,
+		/// <summary>Draw a border around current line.</summary>
+		BORDER = 1,
+		/// <summary>Disable current line decoration.</summary>
+		NONE = 2,
+	}
+
+	/// <summary>
 	/// Selection handle appearance and touch configuration.
 	/// </summary>
 	public class HandleConfig {
@@ -1068,6 +1080,9 @@ namespace SweetEditor {
 		/// <summary>Current-line background position</summary>
 		[JsonPropertyName("current_line")]
 		public PointF CurrentLine { get; set; }
+		/// <summary>Current line render mode.</summary>
+		[JsonPropertyName("current_line_render_mode")]
+		public CurrentLineRenderMode CurrentLineRenderMode { get; set; }
 			/// <summary>Visually rendered text rows (visible area only).</summary>
 			[JsonPropertyName("lines")]
 			public List<VisualLine> VisualLines { get; set; }
@@ -1300,6 +1315,9 @@ namespace SweetEditor {
 
 		[DllImport(LibraryName, EntryPoint = "editor_set_show_split_line", CallingConvention = CallingConvention.Cdecl)]
 		internal static extern void SetShowSplitLine(IntPtr handle, int show);
+
+		[DllImport(LibraryName, EntryPoint = "editor_set_current_line_render_mode", CallingConvention = CallingConvention.Cdecl)]
+		internal static extern void SetCurrentLineRenderMode(IntPtr handle, int mode);
 
 		[DllImport(LibraryName, EntryPoint = "build_editor_render_model", CallingConvention = CallingConvention.Cdecl)]
 		internal static extern IntPtr BuildRenderModel(IntPtr handle, out UIntPtr outSize);
@@ -1742,6 +1760,12 @@ namespace SweetEditor {
 		/// <param name="show">true=show, false=hide.</param>
 		public void SetShowSplitLine(bool show) {
 			NativeMethods.SetShowSplitLine(nativeHandle, show ? 1 : 0);
+		}
+
+		/// <summary>Sets current line render mode.</summary>
+		/// <param name="mode">BACKGROUND(fill), BORDER(stroke), or NONE(disabled).</param>
+		public void SetCurrentLineRenderMode(CurrentLineRenderMode mode) {
+			NativeMethods.SetCurrentLineRenderMode(nativeHandle, (int)mode);
 		}
 
 		#endregion
