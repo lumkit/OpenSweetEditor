@@ -1253,13 +1253,13 @@ class SweetEditorCore {
 
     func registerStyle(styleId: UInt32, color: Int32, fontStyle: Int32) {
         performCoreCall {
-            editor_register_style(handle, styleId, color, 0, fontStyle)
+            editor_register_text_style(handle, styleId, color, 0, fontStyle)
         }
     }
 
     func registerStyle(styleId: UInt32, color: Int32, backgroundColor: Int32, fontStyle: Int32) {
         performCoreCall {
-            editor_register_style(handle, styleId, color, backgroundColor, fontStyle)
+            editor_register_text_style(handle, styleId, color, backgroundColor, fontStyle)
         }
     }
 
@@ -1692,6 +1692,24 @@ class SweetEditorCore {
     func setScale(_ scale: Float) {
         performCoreCall {
             editor_set_scale(handle, scale)
+        }
+    }
+
+    func setContentStartPadding(_ padding: Float) {
+        performCoreCall {
+            editor_set_content_start_padding(handle, padding)
+        }
+    }
+
+    func setShowSplitLine(_ show: Bool) {
+        performCoreCall {
+            editor_set_show_split_line(handle, show ? 1 : 0)
+        }
+    }
+
+    func setCurrentLineRenderMode(_ mode: Int32) {
+        performCoreCall {
+            editor_set_current_line_render_mode(handle, mode)
         }
     }
 

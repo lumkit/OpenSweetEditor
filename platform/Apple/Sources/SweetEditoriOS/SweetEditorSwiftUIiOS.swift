@@ -6,6 +6,10 @@ import SweetEditorCoreInternal
 public final class SweetEditorViewiOS: UIView {
     private let editorView = IOSEditorView(frame: .zero)
 
+    public var settings: EditorSettings {
+        editorView.settings
+    }
+
     public var onFoldToggle: ((SweetEditorFoldToggleEvent) -> Void)? {
         get { editorView.onFoldToggle }
         set { editorView.onFoldToggle = newValue }
@@ -98,6 +102,10 @@ public final class SweetEditorViewiOS: UIView {
 
     public func setMaxGutterIcons(_ count: UInt32) {
         editorView.setMaxGutterIcons(count)
+    }
+
+    public func setWrapMode(_ mode: Int) {
+        editorView.setWrapMode(mode)
     }
 
     public func setScale(_ scale: Float) {

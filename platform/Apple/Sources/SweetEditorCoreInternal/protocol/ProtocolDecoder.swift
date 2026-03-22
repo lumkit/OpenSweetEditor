@@ -359,17 +359,11 @@ extension SweetEditorCore {
               let wrapIndex = reader.readInt32(),
               let lineNumberPosition = readPointData(&reader),
               let isPhantomLine = reader.readInt32(),
-              let foldStateValue = reader.readInt32(),
-              let gutterIconCount = reader.readInt32(),
-              gutterIconCount >= 0 else {
+              let foldStateValue = reader.readInt32() else {
             return nil
         }
-        var gutterIconIds: [Int32] = []
-        gutterIconIds.reserveCapacity(Int(gutterIconCount))
-        for _ in 0..<Int(gutterIconCount) {
-            guard let iconId = reader.readInt32() else { return nil }
-            gutterIconIds.append(iconId)
-        }
+
+        let gutterIconIds: [Int32] = []
         guard let runCount = reader.readInt32(), runCount >= 0 else { return nil }
         var runs: [VisualRun] = []
         runs.reserveCapacity(Int(runCount))
@@ -482,6 +476,28 @@ extension SweetEditorCore {
         return BracketHighlightRect(origin: origin, width: width, height: height)
     }
 
+    fileprivate func skipGutterIconRenderItem(_ reader: inout BinaryReader) -> Bool {
+        guard reader.readInt32() != nil,
+              reader.readInt32() != nil,
+              readPointData(&reader) != nil,
+              reader.readFloat() != nil,
+              reader.readFloat() != nil else {
+            return false
+        }
+        return true
+    }
+
+    fileprivate func skipFoldMarkerRenderItem(_ reader: inout BinaryReader) -> Bool {
+        guard reader.readInt32() != nil,
+              reader.readInt32() != nil,
+              readPointData(&reader) != nil,
+              reader.readFloat() != nil,
+              reader.readFloat() != nil else {
+            return false
+        }
+        return true
+    }
+
     fileprivate func defaultScrollbarRect() -> ScrollbarRect {
         ScrollbarRect(origin: PointData(x: 0, y: 0), width: 0, height: 0)
     }
@@ -512,11 +528,13 @@ extension SweetEditorCore {
     fileprivate func readEditorRenderModel(_ data: Data) -> EditorRenderModel? {
         var reader = BinaryReader(data: data)
         guard let splitX = reader.readFloat(),
+              let splitLineVisible = reader.readInt32(),
               let scrollX = reader.readFloat(),
               let scrollY = reader.readFloat(),
               let viewportWidth = reader.readFloat(),
               let viewportHeight = reader.readFloat(),
               let currentLine = readPointData(&reader),
+              let currentLineRenderMode = reader.readInt32(),
               let lineCount = reader.readInt32(),
               lineCount >= 0 else {
             return nil
@@ -527,6 +545,22 @@ extension SweetEditorCore {
         for _ in 0..<Int(lineCount) {
             guard let line = readVisualLine(&reader) else { return nil }
             lines.append(line)
+        }
+
+        guard let gutterIconCount = reader.readInt32(),
+              gutterIconCount >= 0 else {
+            return nil
+        }
+        for _ in 0..<Int(gutterIconCount) {
+            guard skipGutterIconRenderItem(&reader) else { return nil }
+        }
+
+        guard let foldMarkerCount = reader.readInt32(),
+              foldMarkerCount >= 0 else {
+            return nil
+        }
+        for _ in 0..<Int(foldMarkerCount) {
+            guard skipFoldMarkerRenderItem(&reader) else { return nil }
         }
 
         guard let cursor = readCursorRender(&reader),
@@ -564,7 +598,6 @@ extension SweetEditorCore {
         }
 
         guard let maxGutterIcons = reader.readInt32(),
-              let foldArrowX = reader.readFloat(),
               let linkedEditingRectCount = reader.readInt32(),
               linkedEditingRectCount >= 0 else {
             return nil
@@ -613,7 +646,7 @@ extension SweetEditorCore {
             guide_segments: guideSegments,
             diagnostic_decorations: diagnosticDecorations,
             max_gutter_icons: UInt32(bitPattern: maxGutterIcons),
-            fold_arrow_x: foldArrowX,
+            fold_arrow_x: splitLineVisible != 0 ? Float(currentLineRenderMode) : 0,
             linked_editing_rects: linkedEditingRects,
             bracket_highlight_rects: bracketHighlightRects,
             vertical_scrollbar: verticalScrollbar,

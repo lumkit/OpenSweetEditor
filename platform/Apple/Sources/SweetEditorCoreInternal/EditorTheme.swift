@@ -15,15 +15,16 @@ struct EditorTheme {
     var cursorColor: CGColor
     var selectionColor: CGColor
     var lineNumberColor: CGColor
+    var currentLineNumberColor: CGColor
     var currentLineColor: CGColor
-    var guideLineColor: CGColor
+    var guideColor: CGColor
     var separatorLineColor: CGColor
     var splitLineColor: CGColor
     var scrollbarTrackColor: CGColor
     var scrollbarThumbColor: CGColor
     var compositionUnderlineColor: CGColor
     var inlayHintBgColor: CGColor
-    var inlayHintTextAlpha: CGFloat
+    var inlayHintTextColor: CGColor
     var inlayHintIconColor: CGColor
 
     // Default diagnostic decoration colors (severity: ERROR/WARNING/INFO/HINT).
@@ -40,12 +41,9 @@ struct EditorTheme {
     var bracketHighlightBorderColor: CGColor
     var bracketHighlightBgColor: CGColor
 
-    // Fold-placeholder background alpha (0.0-1.0).
-    var foldPlaceholderBgAlpha: CGFloat
-    // Fold-placeholder text alpha (0.0-1.0).
-    var foldPlaceholderTextAlpha: CGFloat
-    // Phantom-text alpha (0.0-1.0).
-    var phantomTextAlpha: CGFloat
+    var foldPlaceholderBgColor: CGColor
+    var foldPlaceholderTextColor: CGColor
+    var phantomTextColor: CGColor
 
     /// Syntax style map (extensible).
     /// Key: styleId (UInt32), Value: SyntaxStyleDef。
@@ -57,6 +55,12 @@ struct EditorTheme {
         syntaxStyles[styleId] = SyntaxStyleDef(color: color, fontStyle: fontStyle)
     }
 
+    var guideLineColor: CGColor { guideColor }
+    var inlayHintTextAlpha: CGFloat { inlayHintTextColor.alpha }
+    var foldPlaceholderBgAlpha: CGFloat { foldPlaceholderBgColor.alpha }
+    var foldPlaceholderTextAlpha: CGFloat { foldPlaceholderTextColor.alpha }
+    var phantomTextAlpha: CGFloat { phantomTextColor.alpha }
+
     /// Dark theme (VSCode Dark+ style, aligned with Android/WinForms).
     static func dark() -> EditorTheme {
         EditorTheme(
@@ -65,15 +69,16 @@ struct EditorTheme {
             cursorColor:              CGColor(srgbRed: 0xAE/255.0, green: 0xAF/255.0, blue: 0xAD/255.0, alpha: 1.0),
             selectionColor:           CGColor(srgbRed: 0x26/255.0, green: 0x4F/255.0, blue: 0x78/255.0, alpha: 0x99/255.0),
             lineNumberColor:          CGColor(srgbRed: 0x85/255.0, green: 0x85/255.0, blue: 0x85/255.0, alpha: 1.0),
+            currentLineNumberColor:   CGColor(srgbRed: 0xAE/255.0, green: 0xAF/255.0, blue: 0xAD/255.0, alpha: 1.0),
             currentLineColor:         CGColor(srgbRed: 1.0, green: 1.0, blue: 1.0, alpha: 0x15/255.0),
-            guideLineColor:           CGColor(srgbRed: 1.0, green: 1.0, blue: 1.0, alpha: 0x33/255.0),
+            guideColor:               CGColor(srgbRed: 1.0, green: 1.0, blue: 1.0, alpha: 0x33/255.0),
             separatorLineColor:       CGColor(srgbRed: 0x6A/255.0, green: 0x99/255.0, blue: 0x55/255.0, alpha: 1.0),
             splitLineColor:           CGColor(srgbRed: 1.0, green: 1.0, blue: 1.0, alpha: 0x33/255.0),
             scrollbarTrackColor:      CGColor(srgbRed: 1.0, green: 1.0, blue: 1.0, alpha: 0x18/255.0),
             scrollbarThumbColor:      CGColor(srgbRed: 0xA8/255.0, green: 0xA8/255.0, blue: 0xA8/255.0, alpha: 0xD0/255.0),
             compositionUnderlineColor: CGColor(srgbRed: 1.0, green: 0xCC/255.0, blue: 0.0, alpha: 1.0),
             inlayHintBgColor:         CGColor(srgbRed: 1.0, green: 1.0, blue: 1.0, alpha: 0x20/255.0),
-            inlayHintTextAlpha:       0.55,
+            inlayHintTextColor:       CGColor(srgbRed: 0xD4/255.0, green: 0xD4/255.0, blue: 0xD4/255.0, alpha: 0.55),
             inlayHintIconColor:       CGColor(srgbRed: 0xD4/255.0, green: 0xD4/255.0, blue: 0xD4/255.0, alpha: 0xB2/255.0),
             diagnosticErrorColor:     CGColor(srgbRed: 1.0, green: 0.0, blue: 0.0, alpha: 1.0),
             diagnosticWarningColor:   CGColor(srgbRed: 1.0, green: 0.8, blue: 0.0, alpha: 1.0),
@@ -83,9 +88,9 @@ struct EditorTheme {
             linkedEditingInactiveColor: CGColor(srgbRed: 0x56/255.0, green: 0x9C/255.0, blue: 0xD6/255.0, alpha: 0.4),
             bracketHighlightBorderColor: CGColor(srgbRed: 1.0, green: 0xD7/255.0, blue: 0.0, alpha: 0.8),
             bracketHighlightBgColor: CGColor(srgbRed: 1.0, green: 0xD7/255.0, blue: 0.0, alpha: 0.19),
-            foldPlaceholderBgAlpha:   0.4,
-            foldPlaceholderTextAlpha: 0.63,
-            phantomTextAlpha:         0.45,
+            foldPlaceholderBgColor:   CGColor(srgbRed: 1.0, green: 1.0, blue: 1.0, alpha: 0.4),
+            foldPlaceholderTextColor: CGColor(srgbRed: 0xD4/255.0, green: 0xD4/255.0, blue: 0xD4/255.0, alpha: 0.63),
+            phantomTextColor:         CGColor(srgbRed: 0xD4/255.0, green: 0xD4/255.0, blue: 0xD4/255.0, alpha: 0.45),
             syntaxStyles: [
                 1: SyntaxStyleDef(color: uncheckedARGB(0xFF, 0xC6, 0x78, 0xDD), fontStyle: 1),  // keyword      - magenta purple, bold
                 2: SyntaxStyleDef(color: uncheckedARGB(0xFF, 0x56, 0xB6, 0xC2), fontStyle: 0),  // type         - cyan
@@ -107,15 +112,16 @@ struct EditorTheme {
             cursorColor:              CGColor(srgbRed: 0.0, green: 0.0, blue: 0.0, alpha: 1.0),
             selectionColor:           CGColor(srgbRed: 0xAD/255.0, green: 0xD6/255.0, blue: 1.0, alpha: 0x99/255.0),
             lineNumberColor:          CGColor(srgbRed: 0x23/255.0, green: 0x78/255.0, blue: 0x93/255.0, alpha: 1.0),
+            currentLineNumberColor:   CGColor(srgbRed: 0x23/255.0, green: 0x78/255.0, blue: 0x93/255.0, alpha: 1.0),
             currentLineColor:         CGColor(srgbRed: 0.0, green: 0.0, blue: 0.0, alpha: 0x15/255.0),
-            guideLineColor:           CGColor(srgbRed: 0.0, green: 0.0, blue: 0.0, alpha: 0x33/255.0),
+            guideColor:               CGColor(srgbRed: 0.0, green: 0.0, blue: 0.0, alpha: 0x33/255.0),
             separatorLineColor:       CGColor(srgbRed: 0.0, green: 0x80/255.0, blue: 0.0, alpha: 1.0),
             splitLineColor:           CGColor(srgbRed: 0.0, green: 0.0, blue: 0.0, alpha: 0x33/255.0),
             scrollbarTrackColor:      CGColor(srgbRed: 0x2A/255.0, green: 0x3B/255.0, blue: 0x55/255.0, alpha: 0x12/255.0),
             scrollbarThumbColor:      CGColor(srgbRed: 0x5C/255.0, green: 0x6A/255.0, blue: 0x7A/255.0, alpha: 0x96/255.0),
             compositionUnderlineColor: CGColor(srgbRed: 0.0, green: 0x66/255.0, blue: 1.0, alpha: 1.0),
             inlayHintBgColor:         CGColor(srgbRed: 0.0, green: 0.0, blue: 0.0, alpha: 0x20/255.0),
-            inlayHintTextAlpha:       0.55,
+            inlayHintTextColor:       CGColor(srgbRed: 0.0, green: 0.0, blue: 0.0, alpha: 0.55),
             inlayHintIconColor:       CGColor(srgbRed: 0.0, green: 0.0, blue: 0.0, alpha: 0xB2/255.0),
             diagnosticErrorColor:     CGColor(srgbRed: 0.85, green: 0.0, blue: 0.0, alpha: 1.0),
             diagnosticWarningColor:   CGColor(srgbRed: 0.75, green: 0.6, blue: 0.0, alpha: 1.0),
@@ -125,9 +131,9 @@ struct EditorTheme {
             linkedEditingInactiveColor: CGColor(srgbRed: 0.0, green: 0x66/255.0, blue: 1.0, alpha: 0.4),
             bracketHighlightBorderColor: CGColor(srgbRed: 0xB8/255.0, green: 0x86/255.0, blue: 0x0B/255.0, alpha: 0.8),
             bracketHighlightBgColor: CGColor(srgbRed: 0xB8/255.0, green: 0x86/255.0, blue: 0x0B/255.0, alpha: 0.19),
-            foldPlaceholderBgAlpha:   0.4,
-            foldPlaceholderTextAlpha: 0.63,
-            phantomTextAlpha:         0.45,
+            foldPlaceholderBgColor:   CGColor(srgbRed: 0.0, green: 0.0, blue: 0.0, alpha: 0.4),
+            foldPlaceholderTextColor: CGColor(srgbRed: 0.0, green: 0.0, blue: 0.0, alpha: 0.63),
+            phantomTextColor:         CGColor(srgbRed: 0.0, green: 0.0, blue: 0.0, alpha: 0.45),
             syntaxStyles: [
                 1: SyntaxStyleDef(color: uncheckedARGB(0xFF, 0x00, 0x00, 0xFF), fontStyle: 0),  // keyword      - blue
                 2: SyntaxStyleDef(color: uncheckedARGB(0xFF, 0x26, 0x7F, 0x99), fontStyle: 0),  // type         - deep teal

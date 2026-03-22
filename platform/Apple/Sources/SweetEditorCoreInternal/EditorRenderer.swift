@@ -62,7 +62,7 @@ struct EditorRenderer {
         // Guide lines
         context.setLineWidth(1.0)
         for guide in model.guide_segments {
-            let guideColor = (guide.type == .SEPARATOR) ? t.separatorLineColor : t.guideLineColor
+            let guideColor = (guide.type == .SEPARATOR) ? t.separatorLineColor : t.guideColor
             context.setStrokeColor(guideColor)
             if guide.type == .INDENT || guide.style == .DASHED {
                 context.setLineDash(phase: 0, lengths: [3, 3])
@@ -287,14 +287,14 @@ struct EditorRenderer {
             let bgHeight = fontHeight
             let radius = fontHeight * 0.2
 
-            context.setFillColor(t.inlayHintBgColor.copy(alpha: t.foldPlaceholderBgAlpha)!)
+            context.setFillColor(t.foldPlaceholderBgColor)
             let bgRect = CGRect(x: bgLeft, y: bgTop, width: bgWidth, height: bgHeight)
             let path = CGPath(roundedRect: bgRect, cornerWidth: radius, cornerHeight: radius, transform: nil)
             context.addPath(path)
             context.fillPath()
 
             if !text.isEmpty {
-                let foldColor = textColor.copy(alpha: t.foldPlaceholderTextAlpha)!
+                let foldColor = t.foldPlaceholderTextColor
                 drawText(context: context, text: text, x: CGFloat(run.x) + mgn + CGFloat(run.padding),
                          y: CGFloat(run.y), font: font, color: foldColor)
             }
@@ -340,7 +340,7 @@ struct EditorRenderer {
                                     rect: iconRect,
                                     tintColor: t.inlayHintIconColor)
                 } else if !text.isEmpty {
-                    let inlayTextColor = textColor.copy(alpha: t.inlayHintTextAlpha) ?? textColor
+                    let inlayTextColor = t.inlayHintTextColor
                     drawText(context: context, text: text, x: CGFloat(run.x) + mgn + CGFloat(run.padding),
                              y: CGFloat(run.y), font: font, color: inlayTextColor)
                 }
@@ -356,7 +356,7 @@ struct EditorRenderer {
             }
             let drawColor: CGColor
             if run.type == .PHANTOM_TEXT {
-                drawColor = textColor.copy(alpha: t.phantomTextAlpha) ?? textColor
+                drawColor = t.phantomTextColor
             } else {
                 drawColor = textColor
             }

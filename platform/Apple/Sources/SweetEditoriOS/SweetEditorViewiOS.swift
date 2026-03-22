@@ -3,11 +3,12 @@ import UIKit
 import SwiftUI
 import SweetEditorCoreInternal
 
-class IOSEditorView: UIView, UIKeyInput, UITextInputTraits, UIPointerInteractionDelegate, CompletionEditorAccessor {
+class IOSEditorView: UIView, UIKeyInput, UITextInputTraits, UIPointerInteractionDelegate, CompletionEditorAccessor, EditorSettingsHost {
     var onFoldToggle: ((SweetEditorFoldToggleEvent) -> Void)?
     var onInlayHintClick: ((SweetEditorInlayHintClickEvent) -> Void)?
     var onGutterIconClick: ((SweetEditorGutterIconClickEvent) -> Void)?
     var editorIconProvider: EditorIconProvider?
+    let settings = EditorSettings(host: nil)
 
     private var editorCore: SweetEditorCore!
     private var document: SweetDocument?
@@ -50,6 +51,7 @@ class IOSEditorView: UIView, UIKeyInput, UITextInputTraits, UIPointerInteraction
     }
 
     private func setup() {
+        settings.attachHost(self)
         backgroundColor = UIColor(cgColor: EditorRenderer.theme.backgroundColor)
         isMultipleTouchEnabled = true
         isUserInteractionEnabled = true
@@ -211,8 +213,7 @@ class IOSEditorView: UIView, UIKeyInput, UITextInputTraits, UIPointerInteraction
     }
 
     func setMaxGutterIcons(_ count: UInt32) {
-        editorCore.setMaxGutterIcons(count)
-        rebuildAndRedraw()
+        settings.setMaxGutterIcons(count)
     }
 
     func setLineDiagnostics(line: Int, items: [SweetEditorCore.DiagnosticItem]) {
@@ -425,24 +426,27 @@ class IOSEditorView: UIView, UIKeyInput, UITextInputTraits, UIPointerInteraction
     }
 
     func setWrapMode(_ mode: Int) {
-        let wrapModes: [SweetEditorCore.WrapMode] = [.none, .charBreak, .wordBreak]
-        editorCore.setWrapMode(wrapModes[mode])
-        rebuildAndRedraw()
+        let wrapModes: [WrapMode] = [.none, .charBreak, .wordBreak]
+        guard wrapModes.indices.contains(mode) else { return }
+        settings.setWrapMode(wrapModes[mode])
     }
 
     /// Sets editor scale from external API and syncs platform-side fonts/measurer.
     func setScale(_ scale: Float) {
-        editorCore.setScale(scale)
-        editorCore.syncPlatformScale(scale)
-        rebuildAndRedraw()
+        settings.setScale(scale)
     }
 
     func setAutoIndentMode(_ mode: SweetEditorCore.AutoIndentMode) {
-        editorCore.setAutoIndentMode(mode)
+        switch mode {
+        case .none:
+            settings.setAutoIndentMode(.none)
+        case .keepIndent:
+            settings.setAutoIndentMode(.keepIndent)
+        }
     }
 
     func getAutoIndentMode() -> SweetEditorCore.AutoIndentMode {
-        return editorCore.getAutoIndentMode()
+        SweetEditorCore.AutoIndentMode(settings.autoIndentMode)
     }
 
     func getPositionRect(line: Int, column: Int) -> SweetEditorCore.CursorRect {
@@ -476,6 +480,21 @@ class IOSEditorView: UIView, UIKeyInput, UITextInputTraits, UIPointerInteraction
         let bgColor = EditorRenderer.applyTheme(theme, core: editorCore)
         backgroundColor = UIColor(cgColor: bgColor)
         rehighlightAndRedraw()
+    }
+
+    func applyEditorSettings(_ settings: EditorSettings) {
+        editorCore.setScale(settings.scale)
+        editorCore.syncPlatformScale(settings.scale)
+        editorCore.setFoldArrowMode(SweetEditorCore.FoldArrowMode(settings.foldArrowMode))
+        editorCore.setWrapMode(SweetEditorCore.WrapMode(settings.wrapMode))
+        editorCore.setLineSpacing(add: settings.lineSpacingAdd, mult: settings.lineSpacingMult)
+        editorCore.setContentStartPadding(settings.contentStartPadding)
+        editorCore.setShowSplitLine(settings.showSplitLine)
+        editorCore.setCurrentLineRenderMode(settings.currentLineRenderMode.rawValue)
+        editorCore.setAutoIndentMode(SweetEditorCore.AutoIndentMode(settings.autoIndentMode))
+        editorCore.setReadOnly(settings.readOnly)
+        editorCore.setMaxGutterIcons(settings.maxGutterIcons)
+        rebuildAndRedraw()
     }
 
     private func rehighlightAndRedraw() {

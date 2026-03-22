@@ -159,6 +159,9 @@ void editor_set_fold_arrow_mode(intptr_t editor_handle, int mode);
 void editor_set_wrap_mode(intptr_t editor_handle, int mode);
 void editor_set_scale(intptr_t editor_handle, float scale);
 void editor_set_line_spacing(intptr_t editor_handle, float add, float mult);
+void editor_set_content_start_padding(intptr_t editor_handle, float padding);
+void editor_set_show_split_line(intptr_t editor_handle, int show);
+void editor_set_current_line_render_mode(intptr_t editor_handle, int mode);
 
 // ===================== Undo/Redo API =====================
 
@@ -169,7 +172,7 @@ int editor_can_redo(intptr_t editor_handle);
 
 // ===================== Style / Highlight API =====================
 
-void editor_register_style(intptr_t editor_handle, uint32_t style_id, int32_t color, int32_t background_color, int32_t font_style);
+void editor_register_text_style(intptr_t editor_handle, uint32_t style_id, int32_t color, int32_t background_color, int32_t font_style);
 void editor_set_line_spans(intptr_t editor_handle, const uint8_t* data, size_t size);
 void editor_set_batch_line_spans(intptr_t editor_handle, const uint8_t* data, size_t size);
 void editor_clear_line_spans(intptr_t editor_handle, size_t line, uint8_t layer);
