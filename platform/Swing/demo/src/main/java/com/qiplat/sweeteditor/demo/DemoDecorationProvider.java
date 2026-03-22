@@ -236,7 +236,7 @@ public class DemoDecorationProvider implements DecorationProvider {
                     }
                     String key = guide.startLine() + ":" + guide.endLine();
                     if (seenFolds.add(key)) {
-                        foldRegions.add(new FoldRegion(guide.startLine(), guide.endLine(), false));
+                        foldRegions.add(new FoldRegion(guide.startLine(), guide.endLine()));
                     }
                 }
             }

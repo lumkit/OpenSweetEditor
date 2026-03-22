@@ -498,7 +498,7 @@ namespace Demo {
 
 							string key = $"{guide.StartLine}:{guide.EndLine}";
 							if (seenFolds.Add(key)) {
-								foldRegions.Add(new DecorationResult.FoldRegionItem(guide.StartLine, guide.EndLine, false));
+								foldRegions.Add(new DecorationResult.FoldRegionItem(guide.StartLine, guide.EndLine));
 							}
 						}
 					}

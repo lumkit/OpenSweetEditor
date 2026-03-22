@@ -832,7 +832,7 @@ EDITOR_API void editor_clear_matched_brackets(intptr_t editor_handle);
 /// Set foldable region list (compact binary)
 /// @param data payload(LE):
 ///             u32 region_count, then repeat for region_count groups
-///             [u32 start_line, u32 end_line, u32 collapsed]
+///             [u32 start_line, u32 end_line]
 /// @param size payload byte length
 EDITOR_API void editor_set_fold_regions(intptr_t editor_handle, const uint8_t* data, size_t size);
 

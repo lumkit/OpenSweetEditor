@@ -1796,7 +1796,7 @@ void editor_set_fold_regions(intptr_t editor_handle, const uint8_t* data, size_t
   }
 
   size_t fold_bytes = 0;
-  if (mulOverflow(static_cast<size_t>(fold_count), sizeof(uint32_t) * 3, fold_bytes) || cursor.remaining() != fold_bytes) {
+  if (mulOverflow(static_cast<size_t>(fold_count), sizeof(uint32_t) * 2, fold_bytes) || cursor.remaining() != fold_bytes) {
     return;
   }
 
@@ -1805,11 +1805,10 @@ void editor_set_fold_regions(intptr_t editor_handle, const uint8_t* data, size_t
   for (uint32_t i = 0; i < fold_count; ++i) {
     uint32_t start_line = 0;
     uint32_t end_line = 0;
-    uint32_t collapsed = 0;
-    if (!cursor.readU32(start_line) || !cursor.readU32(end_line) || !cursor.readU32(collapsed)) {
+    if (!cursor.readU32(start_line) || !cursor.readU32(end_line)) {
       return;
     }
-    regions.push_back(FoldRegion{static_cast<size_t>(start_line), static_cast<size_t>(end_line), collapsed != 0});
+    regions.push_back(FoldRegion{static_cast<size_t>(start_line), static_cast<size_t>(end_line)});
   }
   editor_core->setFoldRegions(std::move(regions));
 }

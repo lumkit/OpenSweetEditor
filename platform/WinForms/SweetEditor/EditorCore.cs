@@ -432,9 +432,7 @@ namespace SweetEditor {
 		public int StartLine { get; }
 		/// <summary>End line (0-based, inclusive).</summary>
 		public int EndLine { get; }
-		/// <summary>Whether the region is folded</summary>
-		public bool Collapsed { get; }
-		public FoldRegion(int startLine, int endLine, bool collapsed) { StartLine = startLine; EndLine = endLine; Collapsed = collapsed; }
+		public FoldRegion(int startLine, int endLine) { StartLine = startLine; EndLine = endLine; }
 	}
 
 	/// <summary>Immutable value object describing an indent guide line.</summary>

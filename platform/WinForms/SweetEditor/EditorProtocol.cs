@@ -231,14 +231,13 @@ namespace SweetEditor {
 
 		internal static byte[] PackFoldRegions(IList<FoldRegion> regions) {
 			int count = regions.Count;
-			byte[] payload = new byte[4 + count * 12];
+			byte[] payload = new byte[4 + count * 8];
 			int offset = 0;
 			WriteInt32LE(payload, ref offset, count);
 			for (int i = 0; i < count; i++) {
 				var r = regions[i];
 				WriteInt32LE(payload, ref offset, r.StartLine);
 				WriteInt32LE(payload, ref offset, r.EndLine);
-				WriteInt32LE(payload, ref offset, r.Collapsed ? 1 : 0);
 			}
 			return payload;
 		}
