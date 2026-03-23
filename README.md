@@ -139,7 +139,7 @@ SweetEditor follows a minimal-dependency principle. The core runtime depends onl
 
 Testing uses [Catch2](https://github.com/catchorg/Catch2).
 
-## 文档
+## Documentation
 
 | Document                                                                                                     | Description                                                                          |
 | ------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------ |
