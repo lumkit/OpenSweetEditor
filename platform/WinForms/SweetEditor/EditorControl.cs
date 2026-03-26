@@ -132,7 +132,7 @@ namespace SweetEditor {
 		/// <summary>Scrollbar thumb color (ARGB).</summary>
 		public Color ScrollbarThumbColor { get; set; } = Color.FromArgb(unchecked((int)0xAA858585));
 		/// <summary>Scrollbar thumb active (dragging) color (ARGB).</summary>
-public Color ScrollbarThumbActiveColor { get; set; } = Color.FromArgb(unchecked((int)0xFFBBBBBB));
+		public Color ScrollbarThumbActiveColor { get; set; } = Color.FromArgb(unchecked((int)0xFFBBBBBB));
 
 		/// <summary>IME composition underline color (ARGB).</summary>
 		public Color CompositionColor { get; set; }
@@ -217,7 +217,7 @@ public Color ScrollbarThumbActiveColor { get; set; } = Color.FromArgb(unchecked(
 			SplitLineColor = Color.FromArgb(unchecked((int)0x3356617A)),
 			ScrollbarTrackColor = Color.FromArgb(unchecked((int)0x2AFFFFFF)),
 			ScrollbarThumbColor = Color.FromArgb(unchecked((int)0x9A7282A0)),
-ScrollbarThumbActiveColor = Color.FromArgb(unchecked((int)0xFFAABEDD)),
+			ScrollbarThumbActiveColor = Color.FromArgb(unchecked((int)0xFFAABEDD)),
 			CompositionColor = Color.FromArgb(unchecked((int)0xFF7AA2F7)),
 			InlayHintBgColor = Color.FromArgb(unchecked((int)0x223A4A66)),
 			InlayHintTextColor = Color.FromArgb(unchecked((int)0xC0AFC2E0)),
@@ -270,7 +270,7 @@ ScrollbarThumbActiveColor = Color.FromArgb(unchecked((int)0xFFAABEDD)),
 			SplitLineColor = Color.FromArgb(unchecked((int)0x1F29426B)),
 			ScrollbarTrackColor = Color.FromArgb(unchecked((int)0x1F2A3B55)),
 			ScrollbarThumbColor = Color.FromArgb(unchecked((int)0x80446C9C)),
-ScrollbarThumbActiveColor = Color.FromArgb(unchecked((int)0xEE6A9AD0)),
+			ScrollbarThumbActiveColor = Color.FromArgb(unchecked((int)0xEE6A9AD0)),
 			CompositionColor = Color.FromArgb(unchecked((int)0xFF2563EB)),
 			InlayHintBgColor = Color.FromArgb(unchecked((int)0x143B82F6)),
 			InlayHintTextColor = Color.FromArgb(unchecked((int)0xB0344A73)),
@@ -1300,7 +1300,7 @@ ScrollbarThumbActiveColor = Color.FromArgb(unchecked((int)0xEE6A9AD0)),
 				});
 				FireGestureEvents(gestureResult, new System.Drawing.PointF(e.X, e.Y));
 				Flush();
-			UpdateAnimationTimer(gestureResult.NeedsAnimation);
+				UpdateAnimationTimer(gestureResult.NeedsAnimation);
 			} else if (e.Button == MouseButtons.Right) {
 				GestureResult gestureResult = editorCore.HandleGestureEvent(new GestureEvent {
 					Type = EventType.MOUSE_RIGHT_DOWN,
@@ -1325,7 +1325,7 @@ ScrollbarThumbActiveColor = Color.FromArgb(unchecked((int)0xEE6A9AD0)),
 					DirectScale = 1
 				});
 				FireGestureEvents(gestureResult, new System.Drawing.PointF(e.X, e.Y));
-			Flush();
+				Flush();
 				UpdateAnimationTimer(gestureResult.NeedsAnimation);
 			}
 			base.OnMouseMove(e);
@@ -1341,7 +1341,7 @@ ScrollbarThumbActiveColor = Color.FromArgb(unchecked((int)0xEE6A9AD0)),
 					Modifiers = mods,
 					DirectScale = 1
 				});
-			FireGestureEvents(gestureResult, new System.Drawing.PointF(e.X, e.Y));
+				FireGestureEvents(gestureResult, new System.Drawing.PointF(e.X, e.Y));
 				UpdateAnimationTimer(gestureResult.NeedsAnimation);
 			}
 			base.OnMouseUp(e);

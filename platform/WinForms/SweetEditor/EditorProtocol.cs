@@ -9,7 +9,7 @@ namespace SweetEditor {
 
 		#region EditorOptions
 
-	internal static byte[] PackEditorOptions(EditorOptions options) {
+		internal static byte[] PackEditorOptions(EditorOptions options) {
 			// 4 + 8 + 8 + 4 + 4 + 4 + 8 = 40 bytes
 			byte[] payload = new byte[40];
 			int offset = 0;

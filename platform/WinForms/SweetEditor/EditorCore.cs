@@ -1105,18 +1105,18 @@ namespace SweetEditor {
 		/// <summary>Current line render mode.</summary>
 		[JsonPropertyName("current_line_render_mode")]
 		public CurrentLineRenderMode CurrentLineRenderMode { get; set; }
-			/// <summary>Visually rendered text rows (visible area only).</summary>
-			[JsonPropertyName("lines")]
-			public List<VisualLine> VisualLines { get; set; }
-			/// <summary>Gutter icon render list (fully resolved geometry, visible area only).</summary>
-			[JsonPropertyName("gutter_icons")]
-			public List<GutterIconRenderItem> GutterIcons { get; set; }
-			/// <summary>Fold marker render list (fully resolved geometry, visible area only).</summary>
-			[JsonPropertyName("fold_markers")]
-			public List<FoldMarkerRenderItem> FoldMarkers { get; set; }
-			/// <summary>Caret</summary>
-			[JsonPropertyName("cursor")]
-			public Cursor Cursor { get; set; }
+		/// <summary>Visually rendered text rows (visible area only).</summary>
+		[JsonPropertyName("lines")]
+		public List<VisualLine> VisualLines { get; set; }
+		/// <summary>Gutter icon render list (fully resolved geometry, visible area only).</summary>
+		[JsonPropertyName("gutter_icons")]
+		public List<GutterIconRenderItem> GutterIcons { get; set; }
+		/// <summary>Fold marker render list (fully resolved geometry, visible area only).</summary>
+		[JsonPropertyName("fold_markers")]
+		public List<FoldMarkerRenderItem> FoldMarkers { get; set; }
+		/// <summary>Caret</summary>
+		[JsonPropertyName("cursor")]
+		public Cursor Cursor { get; set; }
 		/// <summary>Selection highlight rectangles</summary>
 		[JsonPropertyName("selection_rects")]
 		public List<SelectionRect> SelectionRects { get; set; }
