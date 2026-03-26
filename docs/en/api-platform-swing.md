@@ -56,7 +56,7 @@ For Maven (`pom.xml`):
 ```xml
 <dependency>
     <groupId>com.qiplat</groupId>
-    <artifactId>sweeteditor</artifactId>
+    <artifactId>sweeteditor-swing</artifactId>
     <version>0.0.2</version>
     <scope>compile</scope>
 </dependency>
