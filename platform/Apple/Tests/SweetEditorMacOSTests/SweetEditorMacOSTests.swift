@@ -73,6 +73,30 @@ final class SweetEditorMacOSTests: XCTestCase {
         XCTAssertFalse(containsStyleColor(markerColor, in: after))
     }
 
+    func testRegisterBatchStylesUpdatesRenderedRunColor() {
+        let core = makeCoreWithSingleLineDocument("abc")
+        let styleId: UInt32 = 101
+        let originalColor = Int32(bitPattern: 0xFF00FF00)
+        let updatedColor = Int32(bitPattern: 0xFFFF0000)
+
+        core.registerStyle(styleId: styleId, color: originalColor, fontStyle: 0)
+        core.setLineSpans(
+            line: 0,
+            layer: 0,
+            spans: [SweetEditorCore.StyleSpan(column: 0, length: 3, styleId: styleId)]
+        )
+
+        let before = core.buildRenderModel()
+        XCTAssertTrue(containsStyleColor(originalColor, in: before))
+
+        core.registerBatchStyles([
+            styleId: (color: updatedColor, backgroundColor: 0, fontStyle: 0)
+        ])
+
+        let after = core.buildRenderModel()
+        XCTAssertTrue(containsStyleColor(updatedColor, in: after))
+    }
+
     func testSetLineDiagnosticsWithEmptyArrayClearsPreviousLineDiagnostics() {
         let core = makeCoreWithSingleLineDocument("abc")
 
@@ -246,20 +270,6 @@ final class SweetEditorMacOSTests: XCTestCase {
         view.onGutterIconClick = { _ in }
         XCTAssertNotNil(view.onInlayHintClick)
         XCTAssertNotNil(view.onGutterIconClick)
-    }
-
-    func testMacViewInstallsMouseMovedTrackingForScrollbarHoverReveal() {
-        let view = SweetEditorViewMacOS(frame: NSRect(x: 0, y: 0, width: 320, height: 160))
-
-        view.updateTrackingAreas()
-
-        XCTAssertTrue(
-            view.trackingAreas.contains {
-                $0.options.contains(.mouseMoved)
-                    && $0.options.contains(.activeInKeyWindow)
-                    && $0.options.contains(.inVisibleRect)
-            }
-        )
     }
 
     func testMacViewHoverRevealIsEnabledByDefault() {

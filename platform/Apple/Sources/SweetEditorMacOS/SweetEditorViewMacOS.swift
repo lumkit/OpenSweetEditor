@@ -209,6 +209,11 @@ public class SweetEditorViewMacOS: NSView, NSTextInputClient, CompletionEditorAc
         editorCore.registerStyle(styleId: styleId, color: color, backgroundColor: backgroundColor, fontStyle: fontStyle)
     }
 
+    public func registerBatchStyles(_ stylesById: [UInt32: (color: Int32, backgroundColor: Int32, fontStyle: Int32)]) {
+        editorCore.registerBatchStyles(stylesById)
+        rebuildAndRedraw()
+    }
+
     public func setLineSpans(line: Int, layer: SpanLayer, spans: [SweetEditorCore.StyleSpan]) {
         editorCore.setLineSpans(line: line, layer: layer.rawValue, spans: spans)
         rebuildAndRedraw()
