@@ -183,6 +183,16 @@ public class EditorCore {
     }
 
     /**
+     * Sets whether gutter stays fixed during horizontal scroll.
+     *
+     * @param sticky true=gutter fixed (desktop style), false=gutter scrolls with content (mobile style)
+     */
+    public void setGutterSticky(boolean sticky) {
+        if (mNativeHandle == 0) return;
+        nativeSetGutterSticky(mNativeHandle, sticky);
+    }
+
+    /**
      * Sets current line render mode.
      *
      * @param mode 0=BACKGROUND(fill), 1=BORDER(stroke), 2=NONE(disabled)
@@ -1692,6 +1702,9 @@ public class EditorCore {
 
     @CriticalNative
     private static native void nativeSetShowSplitLine(long handle, boolean show);
+
+    @CriticalNative
+    private static native void nativeSetGutterSticky(long handle, boolean sticky);
 
     @CriticalNative
     private static native void nativeSetCurrentLineRenderMode(long handle, int mode);

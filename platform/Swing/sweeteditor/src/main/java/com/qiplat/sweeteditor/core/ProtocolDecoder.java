@@ -47,6 +47,9 @@ final class ProtocolDecoder {
             model.verticalScrollbar = readScrollbarModel(data);
             model.horizontalScrollbar = readScrollbarModel(data);
         }
+        if (data.remaining() >= 4) {
+            model.gutterSticky = data.getInt() != 0;
+        }
         return model;
     }
 

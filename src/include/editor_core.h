@@ -101,6 +101,8 @@ namespace NS_SWEETEDITOR {
     bool show_split_line {true};
     /// Current line render mode
     CurrentLineRenderMode current_line_render_mode {CurrentLineRenderMode::BACKGROUND};
+    /// Whether gutter stays fixed during horizontal scroll (true=fixed, false=scrolls with content)
+    bool gutter_sticky {true};
 
     U8String dump() const;
   };
@@ -234,6 +236,10 @@ namespace NS_SWEETEDITOR {
     /// Set current line render mode
     /// @param mode BACKGROUND=fill line background, BORDER=draw line border, NONE=disable
     void setCurrentLineRenderMode(CurrentLineRenderMode mode);
+
+    /// Set whether gutter stays fixed during horizontal scroll
+    /// @param sticky true=gutter fixed (desktop style), false=gutter scrolls with content (mobile style)
+    void setGutterSticky(bool sticky);
 #pragma endregion
 
 #pragma region [Rendering]

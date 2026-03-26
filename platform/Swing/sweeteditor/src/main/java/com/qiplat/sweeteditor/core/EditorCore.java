@@ -122,6 +122,10 @@ public class EditorCore implements AutoCloseable {
         EditorNative.setShowSplitLine(nativeHandle, show);
     }
 
+    public void setGutterSticky(boolean sticky) {
+        EditorNative.setGutterSticky(nativeHandle, sticky);
+    }
+
     public void setCurrentLineRenderMode(int mode) {
         EditorNative.setCurrentLineRenderMode(nativeHandle, mode);
     }

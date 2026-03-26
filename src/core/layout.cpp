@@ -137,6 +137,8 @@ namespace NS_SWEETEDITOR {
     const float line_height = getLineHeight();
     const float top_padding = (line_height - m_layout_metrics_.font_height) * 0.5f;
     const float split_x = m_layout_metrics_.gutterWidth();
+    const bool gutter_sticky = m_layout_metrics_.gutter_sticky;
+    const float gutter_offset = gutter_sticky ? 0.0f : -scroll_x;
     for (size_t i = visible_line_info.first_line; i <= visible_line_info.last_line; ++i) {
       LogicalLine& logical_line = logical_lines[i];
       // Crop recomposed VisualLine by horizontal viewport, then map to screen coords
@@ -147,6 +149,7 @@ namespace NS_SWEETEDITOR {
         float screen_y = abs_y - scroll_y;
         // Text draw y should be baseline (line top + top_padding + font_ascent)
         float baseline_y = screen_y + top_padding + m_layout_metrics_.font_ascent;
+        visual_line.line_number_position.x += gutter_offset;
         visual_line.line_number_position.y = baseline_y;
         for (VisualRun& run : visual_line.runs) {
           run.y = baseline_y;
@@ -162,19 +165,19 @@ namespace NS_SWEETEDITOR {
         }
         // For first line (not continuation, not phantom), fill fold state and gutter icon render items
         if (visual_line.wrap_index == 0 && !visual_line.is_phantom_line) {
-          buildGutterIconRenderItems(i, screen_y, model.gutter_icons);
+          buildGutterIconRenderItems(i, screen_y, gutter_offset, model.gutter_icons);
           // Set fold state (used by platform to draw fold/unfold arrow)
           int fs = m_decoration_manager_->getFoldStateForLine(i);
           visual_line.fold_state = static_cast<FoldState>(fs);
           FoldMarkerRenderItem fold_marker;
-          if (buildFoldMarkerRenderItem(i, screen_y, fold_marker)) {
+          if (buildFoldMarkerRenderItem(i, screen_y, gutter_offset, fold_marker)) {
             model.fold_markers.push_back(std::move(fold_marker));
           }
         }
         model.lines.push_back(std::move(visual_line));
       }
     }
-    model.split_x = split_x;
+    model.split_x = split_x + gutter_offset;
     model.max_gutter_icons = m_layout_metrics_.max_gutter_icons;
     model.scroll_x = scroll_x;
     model.scroll_y = scroll_y;
@@ -808,7 +811,8 @@ namespace NS_SWEETEDITOR {
 
     if (m_wrap_mode_ == WrapMode::NONE) {
       bounds.content_width = metrics.max_line_width;
-      bounds.max_scroll_x = std::max(0.0f, metrics.max_line_width - bounds.text_area_width + getLineHeight() * 2);
+      float extra = m_layout_metrics_.gutter_sticky ? 0.0f : bounds.text_area_x;
+      bounds.max_scroll_x = std::max(0.0f, metrics.max_line_width - bounds.text_area_width + getLineHeight() * 2 + extra);
     } else {
       bounds.content_width = bounds.text_area_width;
       bounds.max_scroll_x = 0;
@@ -1675,6 +1679,7 @@ namespace NS_SWEETEDITOR {
   }
 
   void TextLayout::buildGutterIconRenderItems(size_t logical_line, float line_top_screen,
+                                              float gutter_offset,
                                               Vector<GutterIconRenderItem>& out_items) const {
     const auto& gutter_icons = m_decoration_manager_->getLineGutterIcons(logical_line);
     if (gutter_icons.empty()) return;
@@ -1688,7 +1693,7 @@ namespace NS_SWEETEDITOR {
       GutterIconRenderItem item;
       item.logical_line = logical_line;
       item.icon_id = gutter_icons[0].icon_id;
-      item.origin = {m_layout_metrics_.line_number_margin, icon_top};
+      item.origin = {m_layout_metrics_.line_number_margin + gutter_offset, icon_top};
       item.width = icon_size;
       item.height = icon_size;
       out_items.push_back(std::move(item));
@@ -1700,6 +1705,7 @@ namespace NS_SWEETEDITOR {
     const bool show_fold_arrows = m_layout_metrics_.shouldShowFoldArrows();
     const float fold_lane_left = split_x - m_layout_metrics_.line_number_margin - m_layout_metrics_.foldArrowAreaWidth();
     float icon_right = show_fold_arrows ? fold_lane_left : (split_x - 2.0f);
+    icon_right += gutter_offset;
     for (size_t idx = 0; idx < max_icons; ++idx) {
       const size_t icon_index = max_icons - 1 - idx;
       GutterIconRenderItem item;
@@ -1714,6 +1720,7 @@ namespace NS_SWEETEDITOR {
   }
 
   bool TextLayout::buildFoldMarkerRenderItem(size_t logical_line, float line_top_screen,
+                                             float gutter_offset,
                                              FoldMarkerRenderItem& out_item) const {
     if (!m_layout_metrics_.shouldShowFoldArrows()) return false;
     int fs = m_decoration_manager_->getFoldStateForLine(logical_line);
@@ -1721,7 +1728,7 @@ namespace NS_SWEETEDITOR {
     const float fold_width = m_layout_metrics_.foldArrowAreaWidth();
     if (fold_width <= 0) return false;
     const float split_x = m_layout_metrics_.gutterWidth();
-    const float fold_left = split_x - m_layout_metrics_.line_number_margin - fold_width;
+    const float fold_left = split_x - m_layout_metrics_.line_number_margin - fold_width + gutter_offset;
     const float marker_height = m_layout_metrics_.font_height;
     const float line_height = getLineHeight();
     const float marker_top = line_top_screen + std::max(0.0f, (line_height - marker_height) * 0.5f);

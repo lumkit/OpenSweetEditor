@@ -689,6 +689,10 @@ public:
     editor_set_show_split_line(static_cast<intptr_t>(handle), show == JNI_TRUE ? 1 : 0);
   }
 
+  static void setGutterSticky(jlong handle, jboolean sticky) {
+    editor_set_gutter_sticky(static_cast<intptr_t>(handle), sticky == JNI_TRUE ? 1 : 0);
+  }
+
   static void setCurrentLineRenderMode(jlong handle, jint mode) {
     editor_set_current_line_render_mode(static_cast<intptr_t>(handle), static_cast<int>(mode));
   }
@@ -914,6 +918,7 @@ public:
       {"nativeSetLineSpacing", "(JFF)V", (void*) setLineSpacing},
       {"nativeSetContentStartPadding", "(JF)V", (void*) setContentStartPadding},
       {"nativeSetShowSplitLine", "(JZ)V", (void*) setShowSplitLine},
+      {"nativeSetGutterSticky", "(JZ)V", (void*) setGutterSticky},
       {"nativeSetCurrentLineRenderMode", "(JI)V", (void*) setCurrentLineRenderMode},
       {"nativeUndo", "(J)Ljava/nio/ByteBuffer;", (void*) editorUndo},
       {"nativeRedo", "(J)Ljava/nio/ByteBuffer;", (void*) editorRedo},

@@ -1150,6 +1150,9 @@ namespace SweetEditor {
 		/// <summary>Horizontal scrollbar render model.</summary>
 		[JsonPropertyName("horizontal_scrollbar")]
 		public ScrollbarModel HorizontalScrollbar { get; set; }
+		/// <summary>Whether gutter stays fixed during horizontal scroll.</summary>
+		[JsonPropertyName("gutter_sticky")]
+		public bool GutterSticky { get; set; }
 	}
 
 	/// <summary>
@@ -1343,6 +1346,9 @@ namespace SweetEditor {
 
 		[DllImport(LibraryName, EntryPoint = "editor_set_show_split_line", CallingConvention = CallingConvention.Cdecl)]
 		internal static extern void SetShowSplitLine(IntPtr handle, int show);
+
+		[DllImport(LibraryName, EntryPoint = "editor_set_gutter_sticky", CallingConvention = CallingConvention.Cdecl)]
+		internal static extern void SetGutterSticky(IntPtr handle, int sticky);
 
 		[DllImport(LibraryName, EntryPoint = "editor_set_current_line_render_mode", CallingConvention = CallingConvention.Cdecl)]
 		internal static extern void SetCurrentLineRenderMode(IntPtr handle, int mode);
@@ -1799,6 +1805,12 @@ namespace SweetEditor {
 		/// <param name="show">true=show, false=hide.</param>
 		public void SetShowSplitLine(bool show) {
 			NativeMethods.SetShowSplitLine(nativeHandle, show ? 1 : 0);
+		}
+
+		/// <summary>Sets whether gutter stays fixed during horizontal scroll.</summary>
+		/// <param name="sticky">true=gutter fixed (desktop style), false=gutter scrolls with content (mobile style).</param>
+		public void SetGutterSticky(bool sticky) {
+			NativeMethods.SetGutterSticky(nativeHandle, sticky ? 1 : 0);
 		}
 
 		/// <summary>Sets current line render mode.</summary>

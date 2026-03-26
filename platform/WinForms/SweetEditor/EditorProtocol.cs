@@ -788,6 +788,7 @@ namespace SweetEditor {
 				BracketHighlightRects = new List<BracketHighlightRect>(),
 				VerticalScrollbar = default,
 				HorizontalScrollbar = default,
+				GutterSticky = true,
 			};
 		}
 
@@ -943,6 +944,9 @@ namespace SweetEditor {
 				} else {
 					offset = savedOffset;
 				}
+			}
+			if (TryReadInt32(data, ref offset, out int gutterStickyRaw)) {
+				model.GutterSticky = gutterStickyRaw != 0;
 			}
 			return model;
 		}

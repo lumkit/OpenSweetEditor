@@ -1753,6 +1753,7 @@ public class SweetEditor extends View {
         mSettings = new EditorSettings(this);
         mSettings.setContentStartPadding(DEFAULT_CONTENT_START_PADDING_DP * density);
         mSettings.setTypeface(Typeface.create(Typeface.MONOSPACE, Typeface.NORMAL));
+        mSettings.setGutterSticky(false);
         setFocusable(true);
         setFocusableInTouchMode(true);
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {

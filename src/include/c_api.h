@@ -131,6 +131,10 @@ EDITOR_API void editor_set_show_split_line(intptr_t editor_handle, int show);
 /// @param mode 0=BACKGROUND(fill), 1=BORDER(stroke), 2=NONE(disabled)
 EDITOR_API void editor_set_current_line_render_mode(intptr_t editor_handle, int mode);
 
+/// Set whether gutter stays fixed during horizontal scroll
+/// @param sticky 0=gutter scrolls with content (mobile style), non-zero=gutter fixed (desktop style)
+EDITOR_API void editor_set_gutter_sticky(intptr_t editor_handle, int sticky);
+
 #pragma endregion
 
 #pragma region Rendering
@@ -257,6 +261,7 @@ EDITOR_API void editor_set_current_line_render_mode(intptr_t editor_handle, int 
 ///             - PointF origin
 ///             - f32 width
 ///             - f32 height
+///         32. i32 gutter_sticky (0=scrolls with content, 1=fixed)
 ///         Call free_binary_data after use; returns NULL on failure
 EDITOR_API const uint8_t* build_editor_render_model(intptr_t editor_handle, size_t* out_size);
 

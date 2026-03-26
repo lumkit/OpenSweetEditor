@@ -60,6 +60,7 @@ namespace NS_SWEETEDITOR {
         + ", scrollbar.track_tap_mode = " + std::to_string(static_cast<int>(scrollbar.track_tap_mode))
         + ", scrollbar.fade_delay_ms = " + std::to_string(scrollbar.fade_delay_ms)
         + ", scrollbar.fade_duration_ms = " + std::to_string(scrollbar.fade_duration_ms)
+        + ", gutter_sticky = " + (gutter_sticky ? "true" : "false")
         + "}";
   }
 #pragma endregion
@@ -255,6 +256,14 @@ m_fling_ = makeUPtr<FlingAnimator>(tc);
     m_settings_.show_split_line = show;
   }
 
+  void EditorCore::setGutterSticky(bool sticky) {
+    if (m_settings_.gutter_sticky == sticky) return;
+    m_settings_.gutter_sticky = sticky;
+    m_text_layout_->getLayoutMetrics().gutter_sticky = sticky;
+    markAllLinesDirty();
+    normalizeScrollState();
+  }
+
   void EditorCore::setCurrentLineRenderMode(CurrentLineRenderMode mode) {
     if (m_settings_.current_line_render_mode == mode) return;
     m_settings_.current_line_render_mode = mode;
@@ -272,6 +281,7 @@ m_fling_ = makeUPtr<FlingAnimator>(tc);
     m_text_layout_->layoutVisibleLines(model);
     model.split_line_visible = m_settings_.show_split_line;
     model.current_line_render_mode = m_settings_.current_line_render_mode;
+    model.gutter_sticky = m_settings_.gutter_sticky;
     PERF_END(compose, "buildRenderModel::layoutVisibleLines");
 
     float line_height = m_text_layout_->getLineHeight();
@@ -400,7 +410,7 @@ m_fling_ = makeUPtr<FlingAnimator>(tc);
       vertical.thumb.height = thumb_height;
     }
 
-    const float horizontal_track_x = std::max(0.0f, bounds.text_area_x);
+    const float horizontal_track_x = m_settings_.gutter_sticky ? std::max(0.0f, bounds.text_area_x) : 0.0f;
     const float horizontal_track_width = viewport_width - horizontal_track_x - (show_vertical ? scrollbar_thickness : 0.0f);
     const float horizontal_track_y = viewport_height - scrollbar_thickness;
     if (show_horizontal && horizontal_track_width > 0.0f && horizontal_track_y >= 0.0f) {
