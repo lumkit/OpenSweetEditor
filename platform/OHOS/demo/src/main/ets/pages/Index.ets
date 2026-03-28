@@ -10,6 +10,7 @@ import {
 import { resourceManager } from '@kit.LocalizationKit';
 import { util } from '@kit.ArkTS';
 import { window } from '@kit.ArkUI';
+import { DemoCompletionProvider } from '../demo/DemoCompletionProvider';
 import { DemoDecorationProvider } from '../demo/DemoDecorationProvider';
 import {
   createDemoFileMetadata,
@@ -61,12 +62,14 @@ struct Index {
   @State activeFileName: string = '';
 
   private readonly editorController: SweetEditorController = new SweetEditorController();
+  private readonly demoCompletionProvider: DemoCompletionProvider = new DemoCompletionProvider();
   private readonly demoDecorationProvider: DemoDecorationProvider = new DemoDecorationProvider(
     () => this.editorController.getDocument()
   );
   private readonly textDecoder: util.TextDecoder = util.TextDecoder.create('utf-8', { ignoreBOM: true });
   private editorConfigured: boolean = false;
   private decorationProviderAdded: boolean = false;
+  private completionProviderAdded: boolean = false;
   private subscribedEvents: boolean = false;
 
   aboutToAppear(): void {
@@ -155,6 +158,7 @@ struct Index {
           .layoutWeight(1)
           .height(40)
           .backgroundColor(this.panelStrongColor())
+          .fontColor(this.primaryTextColor())
           .borderRadius(12)
           .onSelect((index: number) => {
             if (index < 0 || index >= this.fileNames.length) {
@@ -264,6 +268,11 @@ struct Index {
     if (!this.decorationProviderAdded) {
       this.editorController.addDecorationProvider(this.demoDecorationProvider);
       this.decorationProviderAdded = true;
+    }
+
+    if (!this.completionProviderAdded) {
+      this.editorController.addCompletionProvider(this.demoCompletionProvider);
+      this.completionProviderAdded = true;
     }
 
     this.editorController.applyTheme(createDemoTheme(this.isDarkTheme));
